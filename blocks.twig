@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="//unpkg.com/alpinejs" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/tofsjonas/sortable@latest/sortable.min.js"></script>
+{% do seomatic.config.renderEnabled(false) %}
+
+{% requireAdmin %}
+
+<title>Matrix Blocks</title>
+</head>
+
+<body>
+
+{# TODO:
+   - Links for multisite aren't right
+   - Clean up alpine filters
+#}
+
+{# Default field will be the field with the most matrix block types #}
+{% set defaultPageBuilder = craft.query().select(['fieldId', 'COUNT(*) as fieldCount']).from('{{%matrixblocktypes}}').groupBy('fieldId').orderBy('fieldCount desc').limit(1).collect() %}
+{% set defaultPageBuilder = craft.app.fields.getFieldById(defaultPageBuilder.one().fieldId).handle %}
+
+{% set sites = craft.app.sites.allSites()|length > 1 ? true : false %}
+
+{% set fieldFilter = craft.app.request.getQueryParam('field') ?? defaultPageBuilder %}
+{% set blockFilter = craft.app.request.getQueryParam('type') %}
+{% set siteFilter = craft.app.request.getQueryParam('site') %}
+{% set statusFilter = craft.app.request.getQueryParam('status') %}
+{% set blockStatusFilter = craft.app.request.getQueryParam('blockstatus') %}
+
+{% set fieldId = craft.app.fields.getFieldByHandle(fieldFilter).id %}
+{% set blocks = craft.query().select(['handle', 'name']).from('{{%matrixblocktypes}}').where({'fieldId': fieldId}).orderBy('sortOrder').collect() %}
+
+{% set blockTypes = blockFilter ? blocks|filter(matrixBlockType => matrixBlockType.handle == blockFilter) : blocks %}
+
+{% set prod    = 'https://www.crawco.com/' %}
+{% set staging = 'https://uat.crawco.com/' %}
+{% set dev     = 'https://crawford.hcog.io/' %}
+
+{% set statusColors = collect([
+	{
+		'status': 'live',
+		'class': 'bg-green-500',
+	},
+	{
+		'status': 'pending',
+		'class': 'bg-orange-500',
+	},
+	{
+		'status': 'expired',
+		'class': 'bg-red-600',
+	},
+	{
+		'status': 'disabled',
+		'class': 'bg-white border border-gray-500',
+	},
+	{
+		'status': 'trashed',
+		'class': 'bg-gray-500',
+	},
+	{
+		'status': 'drafts',
+		'class': 'bg-gray-700',
+	},
+	{
+		'status': 'enabled',
+		'class': 'bg-green-500',
+	},
+]) %}
+
+<div class="flex justify-center my-4 space-x-4">
+	{% set optionClasses = 'flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500' %}
+	<div
+		x-data="{
+			open: false,
+			toggle() {
+				if (this.open) {
+					return this.close()
+				}
+
+				this.$refs.button.focus()
+
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+
+				this.open = false
+
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		x-on:keydown.escape.prevent.stop="close($refs.button)"
+		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+		x-id="['field-filter']"
+		class="relative"
+	>
+		<!-- Button -->
+		<button
+			x-ref="button"
+			x-on:click="toggle()"
+			:aria-expanded="open"
+			:aria-controls="$id('field-filter')"
+			type="button"
+			class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50"
+		>
+			Matrix Field{{ fieldFilter ? ': ' ~ craft.app.fields.getFieldByHandle(fieldFilter).name }}
+
+			<!-- Heroicon: chevron-down -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+			</svg>
+		</button>
+
+		<!-- Panel -->
+		<div
+			x-ref="panel"
+			x-show="open"
+			x-transition.origin.top.left
+			x-on:click.outside="close($refs.button)"
+			:id="$id('field-filter')"
+			style="display: none;"
+			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+		>
+			{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
+				<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-50' }}">
+					{{ field.name }}
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div
+		x-data="{
+			open: false,
+			toggle() {
+				if (this.open) {
+					return this.close()
+				}
+
+				this.$refs.button.focus()
+
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+
+				this.open = false
+
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		x-on:keydown.escape.prevent.stop="close($refs.button)"
+		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+		x-id="['block-filter']"
+		class="relative"
+	>
+		<!-- Button -->
+		<button
+			x-ref="button"
+			x-on:click="toggle()"
+			:aria-expanded="open"
+			:aria-controls="$id('block-filter')"
+			type="button"
+			class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50"
+		>
+			Block Type{{ blockFilter ? ': ' ~ collect(blockTypes).one().name }}
+
+			<!-- Heroicon: chevron-down -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+			</svg>
+		</button>
+
+		<!-- Panel -->
+		<div
+			x-ref="panel"
+			x-show="open"
+			x-transition.origin.top.left
+			x-on:click.outside="close($refs.button)"
+			:id="$id('block-filter')"
+			style="display: none;"
+			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+		>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}" class="{{ optionClasses }} {{ blockFilter == '' ? 'bg-blue-50' }}">All Block Types</a>
+			{% for blockType in blocks %}
+				<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}" class="{{ optionClasses }} {{ blockType.handle == blockFilter ? 'bg-blue-50' }}">
+					{{ blockType.name }}
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+
+	{% if sites %}
+	<div
+		x-data="{
+			open: false,
+			toggle() {
+				if (this.open) {
+					return this.close()
+				}
+
+				this.$refs.button.focus()
+
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+
+				this.open = false
+
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		x-on:keydown.escape.prevent.stop="close($refs.button)"
+		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+		x-id="['site-filter']"
+		class="relative"
+	>
+		<!-- Button -->
+		<button
+			x-ref="button"
+			x-on:click="toggle()"
+			:aria-expanded="open"
+			:aria-controls="$id('site-filter')"
+			type="button"
+			class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50"
+		>
+			Site{{ siteFilter ? ': ' ~ craft.app.sites.getSiteByHandle(siteFilter).name }}
+
+			<!-- Heroicon: chevron-down -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+			</svg>
+		</button>
+
+		<!-- Panel -->
+		<div
+			x-ref="panel"
+			x-show="open"
+			x-transition.origin.top.left
+			x-on:click.outside="close($refs.button)"
+			:id="$id('site-filter')"
+			style="display: none;"
+			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+		>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-50' }}">All Sites</a>
+			{% for site in craft.app.sites.allSites() %}
+				<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+					{{ site.name }}
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+
+	<div
+		x-data="{
+			open: false,
+			toggle() {
+				if (this.open) {
+					return this.close()
+				}
+
+				this.$refs.button.focus()
+
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+
+				this.open = false
+
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		x-on:keydown.escape.prevent.stop="close($refs.button)"
+		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+		x-id="['entry-status']"
+		class="relative"
+	>
+		<!-- Button -->
+		<button
+			x-ref="button"
+			x-on:click="toggle()"
+			:aria-expanded="open"
+			:aria-controls="$id('entry-status')"
+			type="button"
+			class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50"
+		>
+			Entry Status{{ statusFilter ? ': ' ~ statusFilter|capitalize }}
+
+			<!-- Heroicon: chevron-down -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+			</svg>
+		</button>
+
+		<!-- Panel -->
+		<div
+			x-ref="panel"
+			x-show="open"
+			x-transition.origin.top.left
+			x-on:click.outside="close($refs.button)"
+			:id="$id('entry-status')"
+			style="display: none;"
+			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+		>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}" class="{{ optionClasses }} {{ statusFilter == '' ? 'bg-blue-50' }}">
+				All Statuses
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'live').one().class }}" title="Live">
+					<span class="sr-only">Live</span>
+				</span>
+				Live
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'pending').one().class }}" title="Pending">
+					<span class="sr-only">Pending</span>
+				</span>
+				Pending
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'expired').one().class }}" title="Expired">
+					<span class="sr-only">Expired</span>
+				</span>
+				Expired
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'disabled').one().class }}" title="Disabled">
+					<span class="sr-only">Disabled</span>
+				</span>
+				Disabled
+			</a>
+		</div>
+	</div>
+
+	<div
+		x-data="{
+			open: false,
+			toggle() {
+				if (this.open) {
+					return this.close()
+				}
+
+				this.$refs.button.focus()
+
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+
+				this.open = false
+
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		x-on:keydown.escape.prevent.stop="close($refs.button)"
+		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+		x-id="['block-status']"
+		class="relative"
+	>
+		<!-- Button -->
+		<button
+			x-ref="button"
+			x-on:click="toggle()"
+			:aria-expanded="open"
+			:aria-controls="$id('block-status')"
+			type="button"
+			class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50"
+		>
+			Block Status{{ blockStatusFilter ? ': ' ~ blockStatusFilter|capitalize }}
+
+			<!-- Heroicon: chevron-down -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+			</svg>
+		</button>
+
+		<!-- Panel -->
+		<div
+			x-ref="panel"
+			x-show="open"
+			x-transition.origin.top.left
+			x-on:click.outside="close($refs.button)"
+			:id="$id('block-status')"
+			style="display: none;"
+			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+		>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}" class="{{ optionClasses }} {{ blockStatusFilter == '' ? 'bg-blue-50' }}">
+				All Statuses
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'enabled').one().class }}" title="Enabled">
+					<span class="sr-only">Enabled</span>
+				</span>
+				Enabled
+			</a>
+			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-50' }}">
+				<span class="rounded-full size-4 block {{ statusColors.where('status', 'disabled').one().class }}" title="Disabled">
+					<span class="sr-only">Disabled</span>
+				</span>
+				Disabled
+			</a>
+		</div>
+	</div>
+	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50">Reset</a>
+</div>
+
+{% set sortIcon %}
+	{# Heroicon: arrows-down #}
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="hidden ml-1 size-5 group-aria-[sort=ascending]:inline-flex group-aria-[sort=descending]:inline-flex group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180">
+		<path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" />
+	</svg>
+
+
+{% endset %}
+
+<div class="space-y-8">
+
+{% for matrixBlockType in blockTypes %}
+	{# OwnerId filter is specific to this site - for some reason those ids are giving errors #}
+	{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().collect()|filter(
+		block => block.ownerId not in [1989,2038] and
+		(siteFilter == '' or block.owner.site.handle == siteFilter) and
+		(statusFilter == '' or block.owner.status == statusFilter) and
+		(blockStatusFilter == '' or block.status == blockStatusFilter)
+	) %}
+<table class="text-left relative w-full sortable">
+	<thead class="sticky top-0">
+		<tr class="bg-white border border-b border-gray">
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">{{ sortIcon }}</th>
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">Title {{ sortIcon }}</th>
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">URI {{ sortIcon }}</th>
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">Section {{ sortIcon }}</th>
+			{% if sites %}
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">Site {{ sortIcon }}</th>
+			{% endif %}
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">Entry {{ sortIcon }}</th>
+			<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">Block {{ sortIcon }}</th>
+			<th colspan="{{ sites == true ? 1 : 4 }}" class="py-1 px-3 select-none whitespace-nowrap no-sort">Links</th>
+		</tr>
+		<tr class="bg-black !text-white">
+			<th class="py-1 px-3">{{ blockQuery|length }}</th>
+			<th class="py-1 px-3" colspan="{{ sites ? 10 : 9 }}"><h1>{{ matrixBlockType.name }}</h1></th>
+		</tr>
+	</thead>
+
+	<tbody>
+		{% for block in blockQuery %}
+			<tr class="border border-b border-gray hover:bg-gray-100">
+				<td class="py-1 px-3">{{ loop.index }}</td>
+				<td class="py-1 px-3">{{ block.owner.title }}</td>
+				<td class="py-1 px-3"><a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a></td>
+				<td class="py-1 px-3">
+					{% if block.owner.fieldLayout.type ends with 'Category' %}
+						{{ block.owner.group.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Category</span>
+					{% elseif block.owner.fieldLayout.type ends with 'Entry' %}
+						{{ block.owner.section.name }}
+					{% elseif block.owner.fieldLayout.type ends with 'GlobalSet'%}
+						{{ block.owner.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Global</span>
+					{% endif %}
+				</td>
+				{% if sites %}
+				<td class="py-1 px-3">{{ block.owner.site }}</td>
+				{% endif %}
+				<td class="py-1 px-3 text-center">
+					<span class="rounded-full size-4 block {{ statusColors.where('status', block.owner.status).one().class }}" title="{{ block.owner.status|capitalize }}">
+						<span class="sr-only">{{ block.owner.status|capitalize }}</span>
+					</span>
+				</td>
+				<td class="py-1 px-3 text-center">
+					<span class="rounded-full size-4 block {{ statusColors.where('status', block.status).one().class }}" title="{{ block.status|capitalize }}">
+						<span class="sr-only">{{ block.status|capitalize }}</span>
+					</span>
+				</td>
+				{% if block.owner.uri and sites == false %}
+					<td class="py-1 px-3">
+						<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
+					</td>
+					<td class="py-1 px-3">
+						<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
+					</td>
+					<td class="py-1 px-3">
+						<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
+					</td>
+				{% endif %}
+				<td class="py-1 px-3">
+					<a href="{{ block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) }}" class="hover:text-blue-500">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 inline-block">
+							<path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+							<path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+						</svg>
+					</a>
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+	{% endfor %}
+</div>
+
+</body>
+</html>
