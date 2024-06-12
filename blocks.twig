@@ -337,7 +337,7 @@
 	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50">Reset</a>
 </div>
 
-<div class="space-y-8">
+<div class="max-w-[125rem] mx-auto space-y-8">
 
 	{% for matrixBlockType in blockTypes %}
 		{# OwnerId filter is specific to this site - for some reason those ids are giving errors #}
@@ -411,31 +411,31 @@
 						{% if sites %}
 							<td class="py-1 px-3">{{ block.owner.site }}</td>
 						{% endif %}
-						<td class="py-1 px-3 text-center">
-							<span class="rounded-full size-4 block {{ statusColors.where('status', block.owner.status).one().class }}" title="{{ block.owner.status|capitalize }}">
+						<td class="py-1 px-3 text-center w-16">
+							<span class="block mx-auto rounded-full size-4 {{ statusColors.where('status', block.owner.status).one().class }}" title="{{ block.owner.status|capitalize }}">
 								<span class="sr-only">{{ block.owner.status|capitalize }}</span>
 							</span>
 						</td>
-						<td class="py-1 px-3 text-center">
-							<span class="rounded-full size-4 block {{ statusColors.where('status', block.status).one().class }}" title="{{ block.status|capitalize }}">
+						<td class="py-1 px-3 text-center w-16">
+							<span class="block mx-auto rounded-full size-4 {{ statusColors.where('status', block.status).one().class }}" title="{{ block.status|capitalize }}">
 								<span class="sr-only">{{ block.status|capitalize }}</span>
 							</span>
 						</td>
 						{% if block.owner.uri and sites == false %}
-							<td class="py-1 px-3">
+							<td class="py-1 px-3 w-16">
 								<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
 							</td>
-							<td class="py-1 px-3">
+							<td class="py-1 px-3 w-16">
 								<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
 							</td>
-							<td class="py-1 px-3">
+							<td class="py-1 px-3 w-16">
 								<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
 							</td>
 						{% endif %}
-						<td class="py-1 px-3">
+						<td class="py-1 px-3 w-11">
 							{# Edit URL should be for Prod #}
 							<a href="{{ block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) }}" class="hover:text-blue-500">
-								<svg class="size-5"><use xlink:href="#pencil-square"></use></svg>
+								<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
 							</a>
 						</td>
 					</tr>
