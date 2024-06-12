@@ -1,4 +1,5 @@
-# Matrix Report for Craft 4
+# Matrix Report for Craft 3/4
+Version 1.0.0
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
