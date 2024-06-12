@@ -456,7 +456,7 @@
 						{% endif %}
 						<td class="py-1 px-3 w-11">
 							{# Edit URL should be for Prod #}
-							<a href="{{ block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) }}" class="hover:text-blue-500">
+							<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500">
 								<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
 							</a>
 						</td>
