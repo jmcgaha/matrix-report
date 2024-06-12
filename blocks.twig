@@ -154,6 +154,7 @@
 				.select(['name', 'handle'])
 				.from('{{%fields}}')
 				.where({'type': 'craft\\fields\\Matrix', 'context': 'global'})
+				.orderBy('name')
 				.all()
 			%}
 			{% for field in matrixFields %}
@@ -231,7 +232,13 @@
 				class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
 			>
 				<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-50' }}">All Sites</a>
-				{% for site in craft.app.sites.allSites() %}
+				{# List primary site first, then others in alpha order #}
+				{% for site in craft.app.sites.allSites()|filter(site => site.primary == true) %}
+					<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+						{{ site.name }}
+					</a>
+				{% endfor %}
+				{% for site in craft.app.sites.allSites()|filter(site => site.primary == false)|sort((a, b) => a.name <=> b.name) %}
 					<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
 						{{ site.name }}
 					</a>
