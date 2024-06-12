@@ -394,7 +394,11 @@
 					<tr class="border border-b border-gray hover:bg-gray-100">
 						<td class="py-1 px-3">{{ loop.index }}</td>
 						<td class="py-1 px-3">{{ block.owner.title }}</td>
-						<td class="py-1 px-3"><a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a></td>
+						<td class="py-1 px-3">
+							{% if block.owner.url %}
+								<a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a>
+							{% endif %}
+						</td>
 						<td class="py-1 px-3">
 							{% if block.owner.fieldLayout.type ends with 'Category' %}
 								{{ block.owner.group.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Category</span>
