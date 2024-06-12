@@ -82,25 +82,7 @@
 <div class="flex justify-center my-4 space-x-4">
 	{% set optionClasses = 'flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500' %}
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				if (this.open) {
-					return this.close()
-				}
-
-				this.$refs.button.focus()
-
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-
-				this.open = false
-
-				focusAfter && focusAfter.focus()
-			}
-		}"
+		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
 		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
 		x-id="['field-filter']"
@@ -142,25 +124,7 @@
 	</div>
 
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				if (this.open) {
-					return this.close()
-				}
-
-				this.$refs.button.focus()
-
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-
-				this.open = false
-
-				focusAfter && focusAfter.focus()
-			}
-		}"
+		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
 		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
 		x-id="['block-filter']"
@@ -204,25 +168,7 @@
 
 	{% if sites %}
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				if (this.open) {
-					return this.close()
-				}
-
-				this.$refs.button.focus()
-
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-
-				this.open = false
-
-				focusAfter && focusAfter.focus()
-			}
-		}"
+		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
 		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
 		x-id="['site-filter']"
@@ -266,25 +212,7 @@
 	{% endif %}
 
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				if (this.open) {
-					return this.close()
-				}
-
-				this.$refs.button.focus()
-
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-
-				this.open = false
-
-				focusAfter && focusAfter.focus()
-			}
-		}"
+		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
 		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
 		x-id="['entry-status']"
@@ -348,25 +276,7 @@
 	</div>
 
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				if (this.open) {
-					return this.close()
-				}
-
-				this.$refs.button.focus()
-
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-
-				this.open = false
-
-				focusAfter && focusAfter.focus()
-			}
-		}"
+		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
 		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
 		x-id="['block-status']"
@@ -511,6 +421,32 @@
 </table>
 	{% endfor %}
 </div>
+
+{% js %}
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('filterDropdown', () => (
+			{
+				open: false,
+				toggle() {
+					if (this.open) {
+						return this.close()
+					}
+
+					this.$refs.button.focus()
+
+					this.open = true
+				},
+				close(focusAfter) {
+					if (! this.open) return
+
+					this.open = false
+
+					focusAfter && focusAfter.focus()
+				}
+			}
+		)
+	)});
+{% endjs %}
 
 </body>
 </html>
