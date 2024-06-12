@@ -363,11 +363,13 @@
 					</th>
 					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
 						Section
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg></th>
+						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+					</th>
 					{% if sites %}
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						Site
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg></th>
+						<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+							Site
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						</th>
 					{% endif %}
 					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
 						Entry
@@ -403,7 +405,7 @@
 							{% endif %}
 						</td>
 						{% if sites %}
-						<td class="py-1 px-3">{{ block.owner.site }}</td>
+							<td class="py-1 px-3">{{ block.owner.site }}</td>
 						{% endif %}
 						<td class="py-1 px-3 text-center">
 							<span class="rounded-full size-4 block {{ statusColors.where('status', block.owner.status).one().class }}" title="{{ block.owner.status|capitalize }}">
@@ -427,6 +429,7 @@
 							</td>
 						{% endif %}
 						<td class="py-1 px-3">
+							{# Edit URL should be for Prod #}
 							<a href="{{ block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) }}" class="hover:text-blue-500">
 								<svg class="size-5"><use xlink:href="#pencil-square"></use></svg>
 							</a>
@@ -438,6 +441,7 @@
 	{% endfor %}
 </div>
 
+{# Alpine Dropdowns: https://alpinejs.dev/component/dropdown #}
 {% js %}
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('filterDropdown', () => (
