@@ -118,7 +118,7 @@
 	</symbol>
 </svg>
 
-<div class="flex justify-center my-4 space-x-4">
+<div class="flex justify-center my-8 space-x-4">
 	<div
 		x-data="filterDropdown()"
 		x-on:keydown.escape.prevent.stop="close($refs.button)"
@@ -353,119 +353,116 @@
 	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50">Reset</a>
 </div>
 
-<div class="max-w-[125rem] mx-auto space-y-8">
+{% for matrixBlockType in blockTypes %}
+	{# OwnerId filter is specific to this site - for some reason those ids are giving errors #}
+	{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
+		block => block.ownerId not in [1989,2038] and
+		(siteFilter == '' or block.owner.site.handle == siteFilter) and
+		(statusFilter == '' or block.owner.status == statusFilter) and
+		(blockStatusFilter == '' or block.status == blockStatusFilter)
+	) %}
+	<table class="max-w-[125rem] mx-auto my-8 relative text-left w-full sortable">
+		<thead class="sticky top-0">
+			<tr class="bg-white border border-b border-gray">
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					Title
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					URI
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					Section
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				{% if sites %}
+					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+						Site
+						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+					</th>
+				{% endif %}
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					Entry
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
+					Block
+					<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+				</th>
+				<th colspan="{{ sites == false and (prod or staging or dev) ? 4 : 1 }}" class="py-1 px-3 select-none whitespace-nowrap no-sort">
+					Links
+				</th>
+			</tr>
+			<tr class="bg-black !text-white">
+				<th class="py-1 px-3">{{ blockQuery|length }}</th>
+				<th class="py-1 px-3" colspan="{{ sites ? 10 : 9 }}"><h1>{{ matrixBlockType.name }}</h1></th>
+			</tr>
+		</thead>
 
-	{% for matrixBlockType in blockTypes %}
-		{# OwnerId filter is specific to this site - for some reason those ids are giving errors #}
-		{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
-			block => block.ownerId not in [1989,2038] and
-			(siteFilter == '' or block.owner.site.handle == siteFilter) and
-			(statusFilter == '' or block.owner.status == statusFilter) and
-			(blockStatusFilter == '' or block.status == blockStatusFilter)
-		) %}
-		<table class="text-left relative w-full sortable">
-			<thead class="sticky top-0">
-				<tr class="bg-white border border-b border-gray">
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						Title
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						URI
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						Section
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
+		<tbody>
+			{% for block in blockQuery %}
+				<tr class="border border-b border-gray hover:bg-gray-100">
+					<td class="py-1 px-3">{{ loop.index }}</td>
+					<td class="py-1 px-3">{{ block.owner.title }}</td>
+					<td class="py-1 px-3">
+						{% if block.owner.url %}
+							<a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a>
+						{% endif %}
+					</td>
+					<td class="py-1 px-3">
+						{% if block.owner.fieldLayout.type ends with 'Category' %}
+							{{ block.owner.group.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Category</span>
+						{% elseif block.owner.fieldLayout.type ends with 'Entry' %}
+							{{ block.owner.section.name }}
+						{% elseif block.owner.fieldLayout.type ends with 'GlobalSet'%}
+							{{ block.owner.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Global</span>
+						{% endif %}
+					</td>
 					{% if sites %}
-						<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-							Site
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-						</th>
+						<td class="py-1 px-3">{{ block.owner.site }}</td>
 					{% endif %}
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						Entry
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
-					<th class="cursor-pointer py-1 px-3 select-none whitespace-nowrap hover:underline group">
-						Block
-						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
-					</th>
-					<th colspan="{{ sites == false and (prod or staging or dev) ? 4 : 1 }}" class="py-1 px-3 select-none whitespace-nowrap no-sort">
-						Links
-					</th>
-				</tr>
-				<tr class="bg-black !text-white">
-					<th class="py-1 px-3">{{ blockQuery|length }}</th>
-					<th class="py-1 px-3" colspan="{{ sites ? 10 : 9 }}"><h1>{{ matrixBlockType.name }}</h1></th>
-				</tr>
-			</thead>
-
-			<tbody>
-				{% for block in blockQuery %}
-					<tr class="border border-b border-gray hover:bg-gray-100">
-						<td class="py-1 px-3">{{ loop.index }}</td>
-						<td class="py-1 px-3">{{ block.owner.title }}</td>
-						<td class="py-1 px-3">
-							{% if block.owner.url %}
-								<a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a>
-							{% endif %}
-						</td>
-						<td class="py-1 px-3">
-							{% if block.owner.fieldLayout.type ends with 'Category' %}
-								{{ block.owner.group.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Category</span>
-							{% elseif block.owner.fieldLayout.type ends with 'Entry' %}
-								{{ block.owner.section.name }}
-							{% elseif block.owner.fieldLayout.type ends with 'GlobalSet'%}
-								{{ block.owner.name }} <span class="bg-gray-300 py-1 px-2 rounded text-[.625rem]">Global</span>
-							{% endif %}
-						</td>
-						{% if sites %}
-							<td class="py-1 px-3">{{ block.owner.site }}</td>
+					<td class="py-1 px-3 text-center w-16">
+						<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.owner.status)|first.class }}" title="{{ block.owner.status|capitalize }}">
+							<span class="sr-only">{{ block.owner.status|capitalize }}</span>
+						</span>
+					</td>
+					<td class="py-1 px-3 text-center w-16">
+						<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.status)|first.class }}" title="{{ block.status|capitalize }}">
+							<span class="sr-only">{{ block.status|capitalize }}</span>
+						</span>
+					</td>
+					{% if block.owner.uri and sites == false %}
+						{% if prod %}
+							<td class="py-1 px-3 w-16">
+								<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
+							</td>
 						{% endif %}
-						<td class="py-1 px-3 text-center w-16">
-							<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.owner.status)|first.class }}" title="{{ block.owner.status|capitalize }}">
-								<span class="sr-only">{{ block.owner.status|capitalize }}</span>
-							</span>
-						</td>
-						<td class="py-1 px-3 text-center w-16">
-							<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.status)|first.class }}" title="{{ block.status|capitalize }}">
-								<span class="sr-only">{{ block.status|capitalize }}</span>
-							</span>
-						</td>
-						{% if block.owner.uri and sites == false %}
-							{% if prod %}
-								<td class="py-1 px-3 w-16">
-									<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
-								</td>
-							{% endif %}
-							{% if staging %}
-								<td class="py-1 px-3 w-16">
-									<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
-								</td>
-							{% endif %}
-							{% if dev %}
-								<td class="py-1 px-3 w-16">
-									<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
-								</td>
-							{% endif %}
+						{% if staging %}
+							<td class="py-1 px-3 w-16">
+								<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
+							</td>
 						{% endif %}
-						<td class="py-1 px-3 w-11">
-							{# Edit URL should be for Prod #}
-							<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500">
-								<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
-							</a>
-						</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endfor %}
-</div>
+						{% if dev %}
+							<td class="py-1 px-3 w-16">
+								<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
+							</td>
+						{% endif %}
+					{% endif %}
+					<td class="py-1 px-3 w-11">
+						{# Edit URL should be for Prod #}
+						<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500">
+							<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endfor %}
 
 {# Alpine Dropdowns: https://alpinejs.dev/component/dropdown #}
 {% js %}
