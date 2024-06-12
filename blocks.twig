@@ -17,7 +17,7 @@
 
 {% requireAdmin %}
 
-<title>Matrix Blocks</title>
+<title>{{ systemName }} Matrix Block Report</title>
 </head>
 
 <body>
@@ -395,7 +395,7 @@
 						Block
 						<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
 					</th>
-					<th colspan="{{ sites == true ? 1 : 4 }}" class="py-1 px-3 select-none whitespace-nowrap no-sort">
+					<th colspan="{{ sites == false and (prod or staging or dev) ? 4 : 1 }}" class="py-1 px-3 select-none whitespace-nowrap no-sort">
 						Links
 					</th>
 				</tr>
@@ -438,15 +438,21 @@
 							</span>
 						</td>
 						{% if block.owner.uri and sites == false %}
-							<td class="py-1 px-3 w-16">
-								<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
-							</td>
-							<td class="py-1 px-3 w-16">
-								<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
-							</td>
-							<td class="py-1 px-3 w-16">
-								<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
-							</td>
+							{% if prod %}
+								<td class="py-1 px-3 w-16">
+									<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
+								</td>
+							{% endif %}
+							{% if staging %}
+								<td class="py-1 px-3 w-16">
+									<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
+								</td>
+							{% endif %}
+							{% if dev %}
+								<td class="py-1 px-3 w-16">
+									<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
+								</td>
+							{% endif %}
 						{% endif %}
 						<td class="py-1 px-3 w-11">
 							{# Edit URL should be for Prod #}
