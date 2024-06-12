@@ -9,12 +9,12 @@ On sites with large matrix page-builders it can be difficult to know if and when
 
 ## Setup
 1. Copy the template to your craft templates folder. I prefer to keep a folder there called `queries` where I like to keep files like this.
-1. Add these environment variables to your .env file to specify your dev, staging, and prod baseUrls.
+2. Add these environment variables to your .env file to specify your dev, staging, and prod baseUrls.
     - `MATRIX_REPORT_PROD_URL`
     - `MATRIX_REPORT_STAGE_URL`
     - `MATRIX_REPORT_DEV_URL`
-1. Login to your control panel as an admin. There is a `requireAdmin` conditional in the template so you must be an admin and logged in otherwise it will redirect to your front-end login page.
-1. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
+3. Login to your control panel as an admin. There is a `requireAdmin` conditional in the template so you must be an admin and logged in otherwise it will redirect to your front-end login page.
+4. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
 
 ## TODO
 - Develop a version for Craft 5
