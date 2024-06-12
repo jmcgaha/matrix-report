@@ -33,9 +33,9 @@
 	.groupBy('fieldId')
 	.orderBy('fieldCount desc')
 	.limit(1)
-	.collect()
+	.all()
 %}
-{% set defaultPageBuilder = craft.app.fields.getFieldById(defaultPageBuilder.one().fieldId).handle %}
+{% set defaultPageBuilder = craft.app.fields.getFieldById((defaultPageBuilder|first).fieldId).handle %}
 
 {# Hide all site filters if there is only 1 site #}
 {% set sites = craft.app.sites.allSites()|length > 1 ? true : false %}
@@ -61,14 +61,14 @@
 	.from('{{%matrixblocktypes}}')
 	.where({'fieldId': fieldId})
 	.orderBy('sortOrder')
-	.collect()
+	.all()
 %}
 
 {# Filter blocks if there is a type filter selected #}
 {% set blockTypes = blockFilter ? blocks|filter(matrixBlockType => matrixBlockType.handle == blockFilter) : blocks %}
 
 {# Set default classes for element/block statuses #}
-{% set statusColors = collect([
+{% set statusColors = [
 	{
 		'status': 'live',
 		'class': 'bg-green-500',
@@ -97,7 +97,7 @@
 		'status': 'enabled',
 		'class': 'bg-green-500',
 	},
-]) %}
+] %}
 
 {# Define some large TW classes #}
 {% set dropdownClasses = 'flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50' %}
@@ -147,7 +147,16 @@
 			style="display: none;"
 			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
 		>
-			{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
+			{# getFieldsByType doesn't work on Craft 3 so querying DB instead
+			   {% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
+			#}
+			{% set matrixFields = craft.query()
+				.select(['name', 'handle'])
+				.from('{{%fields}}')
+				.where({'type': 'craft\\fields\\Matrix', 'context': 'global'})
+				.all()
+			%}
+			{% for field in matrixFields %}
 				<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-50' }}">
 					{{ field.name }}
 				</a>
@@ -170,7 +179,7 @@
 			type="button"
 			class="{{ dropdownClasses }}"
 		>
-			Block Type{{ blockFilter ? (': <span class="text-[.8em]">' ~ collect(blockTypes).one().name ~ '</span>')|raw }}
+			Block Type{{ blockFilter ? (': <span class="text-[.8em]">' ~ (blockTypes|first).name ~ '</span>')|raw }}
 			<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
 		</button>
 
@@ -263,25 +272,25 @@
 				All Statuses
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'live').one().class }}" title="Live">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'live')|first.class }}" title="Live">
 					<span class="sr-only">Live</span>
 				</span>
 				Live
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'pending').one().class }}" title="Pending">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'pending')|first.class }}" title="Pending">
 					<span class="sr-only">Pending</span>
 				</span>
 				Pending
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'expired').one().class }}" title="Expired">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'expired')|first.class }}" title="Expired">
 					<span class="sr-only">Expired</span>
 				</span>
 				Expired
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'disabled').one().class }}" title="Disabled">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
 					<span class="sr-only">Disabled</span>
 				</span>
 				Disabled
@@ -321,13 +330,13 @@
 				All Statuses
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'enabled').one().class }}" title="Enabled">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'enabled')|first.class }}" title="Enabled">
 					<span class="sr-only">Enabled</span>
 				</span>
 				Enabled
 			</a>
 			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors.where('status', 'disabled').one().class }}" title="Disabled">
+				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
 					<span class="sr-only">Disabled</span>
 				</span>
 				Disabled
@@ -341,7 +350,7 @@
 
 	{% for matrixBlockType in blockTypes %}
 		{# OwnerId filter is specific to this site - for some reason those ids are giving errors #}
-		{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().collect()|filter(
+		{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
 			block => block.ownerId not in [1989,2038] and
 			(siteFilter == '' or block.owner.site.handle == siteFilter) and
 			(statusFilter == '' or block.owner.status == statusFilter) and
@@ -412,12 +421,12 @@
 							<td class="py-1 px-3">{{ block.owner.site }}</td>
 						{% endif %}
 						<td class="py-1 px-3 text-center w-16">
-							<span class="block mx-auto rounded-full size-4 {{ statusColors.where('status', block.owner.status).one().class }}" title="{{ block.owner.status|capitalize }}">
+							<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.owner.status)|first.class }}" title="{{ block.owner.status|capitalize }}">
 								<span class="sr-only">{{ block.owner.status|capitalize }}</span>
 							</span>
 						</td>
 						<td class="py-1 px-3 text-center w-16">
-							<span class="block mx-auto rounded-full size-4 {{ statusColors.where('status', block.status).one().class }}" title="{{ block.status|capitalize }}">
+							<span class="block mx-auto rounded-full size-4 {{ statusColors|filter(s => s.status == block.status)|first.class }}" title="{{ block.status|capitalize }}">
 								<span class="sr-only">{{ block.status|capitalize }}</span>
 							</span>
 						</td>

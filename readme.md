@@ -17,6 +17,5 @@ On sites with large matrix page-builders it can be difficult to know when and wh
 1. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
 
 ## TODO
-- See if this works on Craft 3
 - Develop a version for Craft 5
 - See if there is a way to provide multi-environment entry urls for multi-site installs (currently it hides the urls in this situation)
