@@ -1,5 +1,5 @@
 # Matrix Report for Craft 3/4
-Version 4.0.0
+Version 4.0.2
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -7,6 +7,7 @@ On sites with large matrix page-builders it can be difficult to know if and when
 - Site block is used on (when more than 1 site exists)
 - Entry status of parent entry
 - Block status
+Any entry, category, or global associated with a Matrix block assigned to it will output in this report.
 
 ## Setup
 1. Copy the template to your craft templates folder. I prefer to keep a folder there called `queries` where I like to keep files like this.
