@@ -1,7 +1,7 @@
 {#---
 
 # Matrix Report for Craft 3/4
-Version 4.0.1
+Version 4.0.2
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -377,6 +377,7 @@ On sites with large matrix page-builders it can be difficult to know if and when
 
 {% for matrixBlockType in blockTypes %}
 	{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
+		block => 
 		(siteFilter == '' or block.owner.site.handle == siteFilter) and
 		(statusFilter == '' or block.owner.status == statusFilter) and
 		(blockStatusFilter == '' or block.status == blockStatusFilter)
