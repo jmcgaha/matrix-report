@@ -142,107 +142,32 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 	</symbol>
 </svg>
 
-<div class="flex justify-center my-8 space-x-4">
-	<div
-		x-data="filterDropdown()"
-		x-on:keydown.escape.prevent.stop="close($refs.button)"
-		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-		x-id="['field-filter']"
-		class="relative"
-	>
-		<button
-			x-ref="button"
-			x-on:click="toggle()"
-			:aria-expanded="open"
-			:aria-controls="$id('field-filter')"
-			type="button"
-			class="{{ dropdownClasses }}"
-		>
-			Matrix Field{{ fieldFilter ? (': <span class="text-[.8em]">' ~ craft.app.fields.getFieldByHandle(fieldFilter).name ~ '</span>')|raw }}
-			<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
-		</button>
-
-		<div
-			x-ref="panel"
-			x-show="open"
-			x-transition.origin.top.left
-			x-on:click.outside="close($refs.button)"
-			:id="$id('field-filter')"
-			style="display: none;"
-			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
-		>
-			{# getFieldsByType doesn't work on Craft 3 so querying DB instead
-			   {% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
-			#}
-			{% set matrixFields = craft.query()
-				.select(['name', 'handle'])
-				.from('{{%fields}}')
-				.where({'type': 'craft\\fields\\Matrix', 'context': 'global'})
-				.orderBy('name')
-				.all()
-			%}
-			{% for field in matrixFields %}
-				<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-50' }}">
-					{{ field.name }}
-				</a>
-			{% endfor %}
-		</div>
+<div class="flex items-center justify-between max-w-[125rem] mx-auto my-8 space-x-4">
+	<div class="flex items-center">
+		{% if craft.app.getEditionName() not in ['Solo', 'Team'] and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
+			<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo"></a>
+		{% else %}
+			<a href="{{ url('/') }}" class="rounded-full bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset ring-indigo-600/10 hover:bg-blue-50">{{ systemName }}</a>
+		{% endif %}
 	</div>
 
-	<div
-		x-data="filterDropdown()"
-		x-on:keydown.escape.prevent.stop="close($refs.button)"
-		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-		x-id="['block-filter']"
-		class="relative"
-	>
-		<button
-			x-ref="button"
-			x-on:click="toggle()"
-			:aria-expanded="open"
-			:aria-controls="$id('block-filter')"
-			type="button"
-			class="{{ dropdownClasses }}"
-		>
-			Block Type{{ blockFilter ? (': <span class="text-[.8em]">' ~ (blockTypes|first).name ~ '</span>')|raw }}
-			<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
-		</button>
-
-		<div
-			x-ref="panel"
-			x-show="open"
-			x-transition.origin.top.left
-			x-on:click.outside="close($refs.button)"
-			:id="$id('block-filter')"
-			style="display: none;"
-			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
-		>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}" class="{{ optionClasses }} {{ blockFilter == '' ? 'bg-blue-50' }}">All Block Types</a>
-			{% for blockType in blocks %}
-				<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}" class="{{ optionClasses }} {{ blockType.handle == blockFilter ? 'bg-blue-50' }}">
-					{{ blockType.name }}
-				</a>
-			{% endfor %}
-		</div>
-	</div>
-
-	{% if sites %}
+	<div class="flex items-center justify-center space-x-4">
 		<div
 			x-data="filterDropdown()"
 			x-on:keydown.escape.prevent.stop="close($refs.button)"
 			x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-			x-id="['site-filter']"
+			x-id="['field-filter']"
 			class="relative"
 		>
 			<button
 				x-ref="button"
 				x-on:click="toggle()"
 				:aria-expanded="open"
-				:aria-controls="$id('site-filter')"
+				:aria-controls="$id('field-filter')"
 				type="button"
 				class="{{ dropdownClasses }}"
 			>
-				Site{{ siteFilter ? (': <span class="text-[.8em]">' ~ craft.app.sites.getSiteByHandle(siteFilter).name ~ '</span>')|raw }}
+				Matrix Field{{ fieldFilter ? (': <span class="text-[.8em]">' ~ craft.app.fields.getFieldByHandle(fieldFilter).name ~ '</span>')|raw }}
 				<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
 			</button>
 
@@ -251,135 +176,222 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 				x-show="open"
 				x-transition.origin.top.left
 				x-on:click.outside="close($refs.button)"
-				:id="$id('site-filter')"
+				:id="$id('field-filter')"
 				style="display: none;"
 				class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
 			>
-				<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-50' }}">All Sites</a>
-				{# List primary site first, then others in alpha order #}
-				{% for site in craft.app.sites.allSites()|filter(site => site.primary == true) %}
-					<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
-						{{ site.name }}
-					</a>
-				{% endfor %}
-				{% for site in craft.app.sites.allSites()|filter(site => site.primary == false)|sort((a, b) => a.name <=> b.name) %}
-					<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
-						{{ site.name }}
+				{# getFieldsByType doesn't work on Craft 3 so querying DB instead
+					{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
+				#}
+				{% set matrixFields = craft.query()
+					.select(['name', 'handle'])
+					.from('{{%fields}}')
+					.where({'type': 'craft\\fields\\Matrix', 'context': 'global'})
+					.orderBy('name')
+					.all()
+				%}
+				{% for field in matrixFields %}
+					<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-50' }}">
+						{{ field.name }}
 					</a>
 				{% endfor %}
 			</div>
 		</div>
-	{% endif %}
-
-	<div
-		x-data="filterDropdown()"
-		x-on:keydown.escape.prevent.stop="close($refs.button)"
-		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-		x-id="['entry-status']"
-		class="relative"
-	>
-		<button
-			x-ref="button"
-			x-on:click="toggle()"
-			:aria-expanded="open"
-			:aria-controls="$id('entry-status')"
-			type="button"
-			class="{{ dropdownClasses }}"
-		>
-			Entry Status{{ statusFilter ? (': <span class="text-[.8em]">' ~ statusFilter|capitalize ~ '</span>')|raw }}
-			<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
-		</button>
 
 		<div
-			x-ref="panel"
-			x-show="open"
-			x-transition.origin.top.left
-			x-on:click.outside="close($refs.button)"
-			:id="$id('entry-status')"
-			style="display: none;"
-			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+			x-data="filterDropdown()"
+			x-on:keydown.escape.prevent.stop="close($refs.button)"
+			x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+			x-id="['block-filter']"
+			class="relative"
 		>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}" class="{{ optionClasses }} {{ statusFilter == '' ? 'bg-blue-50' }}">
-				All Statuses
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'live')|first.class }}" title="Live">
-					<span class="sr-only">Live</span>
-				</span>
-				Live
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'pending')|first.class }}" title="Pending">
-					<span class="sr-only">Pending</span>
-				</span>
-				Pending
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'expired')|first.class }}" title="Expired">
-					<span class="sr-only">Expired</span>
-				</span>
-				Expired
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
-					<span class="sr-only">Disabled</span>
-				</span>
-				Disabled
-			</a>
-		</div>
-	</div>
+			<button
+				x-ref="button"
+				x-on:click="toggle()"
+				:aria-expanded="open"
+				:aria-controls="$id('block-filter')"
+				type="button"
+				class="{{ dropdownClasses }}"
+			>
+				Block Type{{ blockFilter ? (': <span class="text-[.8em]">' ~ (blockTypes|first).name ~ '</span>')|raw }}
+				<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
+			</button>
 
-	<div
-		x-data="filterDropdown()"
-		x-on:keydown.escape.prevent.stop="close($refs.button)"
-		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-		x-id="['block-status']"
-		class="relative"
-	>
-		<button
-			x-ref="button"
-			x-on:click="toggle()"
-			:aria-expanded="open"
-			:aria-controls="$id('block-status')"
-			type="button"
-			class="{{ dropdownClasses }}"
-		>
-			Block Status{{ blockStatusFilter ? (': <span class="text-[.8em]">' ~ blockStatusFilter|capitalize ~ '</span>')|raw }}
-			<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
-		</button>
+			<div
+				x-ref="panel"
+				x-show="open"
+				x-transition.origin.top.left
+				x-on:click.outside="close($refs.button)"
+				:id="$id('block-filter')"
+				style="display: none;"
+				class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+			>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}" class="{{ optionClasses }} {{ blockFilter == '' ? 'bg-blue-50' }}">All Block Types</a>
+				{% for blockType in blocks %}
+					<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}" class="{{ optionClasses }} {{ blockType.handle == blockFilter ? 'bg-blue-50' }}">
+						{{ blockType.name }}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+
+		{% if sites %}
+			<div
+				x-data="filterDropdown()"
+				x-on:keydown.escape.prevent.stop="close($refs.button)"
+				x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+				x-id="['site-filter']"
+				class="relative"
+			>
+				<button
+					x-ref="button"
+					x-on:click="toggle()"
+					:aria-expanded="open"
+					:aria-controls="$id('site-filter')"
+					type="button"
+					class="{{ dropdownClasses }}"
+				>
+					Site{{ siteFilter ? (': <span class="text-[.8em]">' ~ craft.app.sites.getSiteByHandle(siteFilter).name ~ '</span>')|raw }}
+					<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
+				</button>
+
+				<div
+					x-ref="panel"
+					x-show="open"
+					x-transition.origin.top.left
+					x-on:click.outside="close($refs.button)"
+					:id="$id('site-filter')"
+					style="display: none;"
+					class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+				>
+					<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-50' }}">All Sites</a>
+					{# List primary site first, then others in alpha order #}
+					{% for site in craft.app.sites.allSites()|filter(site => site.primary == true) %}
+						<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+							{{ site.name }}
+						</a>
+					{% endfor %}
+					{% for site in craft.app.sites.allSites()|filter(site => site.primary == false)|sort((a, b) => a.name <=> b.name) %}
+						<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+							{{ site.name }}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+		{% endif %}
 
 		<div
-			x-ref="panel"
-			x-show="open"
-			x-transition.origin.top.left
-			x-on:click.outside="close($refs.button)"
-			:id="$id('block-status')"
-			style="display: none;"
-			class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+			x-data="filterDropdown()"
+			x-on:keydown.escape.prevent.stop="close($refs.button)"
+			x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+			x-id="['entry-status']"
+			class="relative"
 		>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}" class="{{ optionClasses }} {{ blockStatusFilter == '' ? 'bg-blue-50' }}">
-				All Statuses
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'enabled')|first.class }}" title="Enabled">
-					<span class="sr-only">Enabled</span>
-				</span>
-				Enabled
-			</a>
-			<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-50' }}">
-				<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
-					<span class="sr-only">Disabled</span>
-				</span>
-				Disabled
-			</a>
+			<button
+				x-ref="button"
+				x-on:click="toggle()"
+				:aria-expanded="open"
+				:aria-controls="$id('entry-status')"
+				type="button"
+				class="{{ dropdownClasses }}"
+			>
+				Entry Status{{ statusFilter ? (': <span class="text-[.8em]">' ~ statusFilter|capitalize ~ '</span>')|raw }}
+				<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
+			</button>
+
+			<div
+				x-ref="panel"
+				x-show="open"
+				x-transition.origin.top.left
+				x-on:click.outside="close($refs.button)"
+				:id="$id('entry-status')"
+				style="display: none;"
+				class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+			>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}" class="{{ optionClasses }} {{ statusFilter == '' ? 'bg-blue-50' }}">
+					All Statuses
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'live')|first.class }}" title="Live">
+						<span class="sr-only">Live</span>
+					</span>
+					Live
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'pending')|first.class }}" title="Pending">
+						<span class="sr-only">Pending</span>
+					</span>
+					Pending
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'expired')|first.class }}" title="Expired">
+						<span class="sr-only">Expired</span>
+					</span>
+					Expired
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
+						<span class="sr-only">Disabled</span>
+					</span>
+					Disabled
+				</a>
+			</div>
 		</div>
+
+		<div
+			x-data="filterDropdown()"
+			x-on:keydown.escape.prevent.stop="close($refs.button)"
+			x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+			x-id="['block-status']"
+			class="relative"
+		>
+			<button
+				x-ref="button"
+				x-on:click="toggle()"
+				:aria-expanded="open"
+				:aria-controls="$id('block-status')"
+				type="button"
+				class="{{ dropdownClasses }}"
+			>
+				Block Status{{ blockStatusFilter ? (': <span class="text-[.8em]">' ~ blockStatusFilter|capitalize ~ '</span>')|raw }}
+				<svg class="h-5 w-5 text-gray-400"><use xlink:href="#chevron-down"></use></svg>
+			</button>
+
+			<div
+				x-ref="panel"
+				x-show="open"
+				x-transition.origin.top.left
+				x-on:click.outside="close($refs.button)"
+				:id="$id('block-status')"
+				style="display: none;"
+				class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+			>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}" class="{{ optionClasses }} {{ blockStatusFilter == '' ? 'bg-blue-50' }}">
+					All Statuses
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'enabled')|first.class }}" title="Enabled">
+						<span class="sr-only">Enabled</span>
+					</span>
+					Enabled
+				</a>
+				<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-50' }}">
+					<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
+						<span class="sr-only">Disabled</span>
+					</span>
+					Disabled
+				</a>
+			</div>
+		</div>
+
 	</div>
-	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-5 py-2.5 rounded-md shadow hover:bg-blue-50">Reset</a>
+
+	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-3 py-1.5 text-sm rounded-full shadow hover:bg-blue-50">Reset</a>
 </div>
 
 {% for matrixBlockType in blockTypes %}
 	{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
-		block => 
+		block =>
 		(siteFilter == '' or block.owner.site.handle == siteFilter) and
 		(statusFilter == '' or block.owner.status == statusFilter) and
 		(blockStatusFilter == '' or block.status == blockStatusFilter)
