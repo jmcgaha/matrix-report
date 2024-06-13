@@ -21,3 +21,4 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 ## TODO
 - Develop a version for Craft 5
 - See if there is a way to provide multi-environment entry urls for multi-site installs (currently it hides the urls in this situation)
+- Matrix blocks inside of Neo seem to behave differently and don’t output data about the page
