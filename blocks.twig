@@ -1,7 +1,7 @@
 {#---
 
 # Matrix Report for Craft 3/4
-Version 4.0.2
+Version 4.0.3
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -19,6 +19,9 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
     - `MATRIX_REPORT_DEV_URL`
 3. Login to your control panel as an admin. There is a `requireAdmin` conditional in the template so you must be an admin and logged in otherwise it will redirect to your front-end login page.
 4. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
+
+## Gotcha’s
+- Sometimes orphan matrix blocks exist on a site even after running `craft utils/prune-orphaned-matrix-blocks` and this will cause this template to error that gives the ownerId of the orphan. Add that to an env named `MATRIX_REPORT_OWNER_FILTER`. For multiple values separate with a comma. It should look like: `MATRIX_REPORT_OWNER_FILTER=1989,2038`
 
 ## TODO
 - Develop a version for Craft 5
@@ -68,6 +71,9 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 {% set prod    = getenv('MATRIX_REPORT_PROD_URL') %}
 {% set staging = getenv('MATRIX_REPORT_STAGE_URL') %}
 {% set dev     = getenv('MATRIX_REPORT_DEV_URL') %}
+
+{# Orphan Ids to ignore #}
+{% set ownerId = getenv('MATRIX_REPORT_OWNER_FILTER')|split(',') %}
 
 {# Query params and their defaults #}
 {% set fieldFilter       = craft.app.request.getQueryParam('field') ?? defaultPageBuilder %}
@@ -147,7 +153,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 		{% if craft.app.getEditionName() not in ['Solo', 'Team'] and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
 			<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo"></a>
 		{% else %}
-			<a href="{{ url('/') }}" class="rounded-full bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset ring-indigo-600/10 hover:bg-blue-50">{{ systemName }}</a>
+			<a href="{{ url('/') }}" class="rounded-md bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset ring-indigo-600/10 hover:bg-blue-50">{{ systemName }}</a>
 		{% endif %}
 	</div>
 
@@ -386,12 +392,12 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 
 	</div>
 
-	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-3 py-1.5 text-sm rounded-full shadow hover:bg-blue-50">Reset</a>
+	<a href="{{ url(craft.app.request.pathInfo) }}" class="flex items-center gap-2 bg-white px-3 py-1.5 text-sm rounded-md shadow hover:bg-blue-50">Reset</a>
 </div>
 
 {% for matrixBlockType in blockTypes %}
 	{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
-		block =>
+		block => block.ownerId not in ownerId and
 		(siteFilter == '' or block.owner.site.handle == siteFilter) and
 		(statusFilter == '' or block.owner.status == statusFilter) and
 		(blockStatusFilter == '' or block.status == blockStatusFilter)
