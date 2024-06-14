@@ -1,7 +1,7 @@
 {#---
 
 # Matrix Report for Craft 3/4
-Version 4.0.3
+Version 4.0.4
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -151,9 +151,9 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 <div class="flex items-center justify-between max-w-[125rem] mx-auto my-8 space-x-4">
 	<div class="flex items-center">
 		{% if craft.app.getEditionName() not in ['Solo', 'Team'] and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
-			<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo"></a>
+			<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo" target="_blank"></a>
 		{% else %}
-			<a href="{{ url('/') }}" class="rounded-md bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset ring-indigo-600/10 hover:bg-blue-50">{{ systemName }}</a>
+			<a href="{{ url('/') }}" class="rounded-md bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset ring-indigo-600/10 hover:bg-blue-50" target="_blank">{{ systemName }}</a>
 		{% endif %}
 	</div>
 
@@ -451,7 +451,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 					<td class="py-1 px-3">{{ block.owner.title }}</td>
 					<td class="py-1 px-3">
 						{% if block.owner.url %}
-							<a href="{{ url(block.owner.url) }}" class="hover:underline">{{ block.owner.uri }}</a>
+							<a href="{{ url(block.owner.url) }}" class="hover:underline" target="_blank">{{ block.owner.uri }}</a>
 						{% endif %}
 					</td>
 					<td class="py-1 px-3">
@@ -479,23 +479,23 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 					{% if block.owner.uri and sites == false %}
 						{% if prod %}
 							<td class="py-1 px-3 w-16">
-								<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline">Prod</a>
+								<a href="{{ url(prod ~ block.owner.uri ) }}" class="hover:underline" target="_blank">Prod</a>
 							</td>
 						{% endif %}
 						{% if staging %}
 							<td class="py-1 px-3 w-16">
-								<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline">Stage</a>
+								<a href="{{ url(staging ~ block.owner.uri ) }}" class="hover:underline" target="_blank">Stage</a>
 							</td>
 						{% endif %}
 						{% if dev %}
 							<td class="py-1 px-3 w-16">
-								<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline">Dev</a>
+								<a href="{{ url(dev ~ block.owner.uri ) }}" class="hover:underline" target="_blank">Dev</a>
 							</td>
 						{% endif %}
 					{% endif %}
 					<td class="py-1 px-3 w-11">
 						{# Edit URL should be for Prod #}
-						<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500">
+						<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500" target="_blank">
 							<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
 						</a>
 					</td>
