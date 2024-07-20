@@ -131,7 +131,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 			] %}
 
 			{# Define some large TW classes #}
-			{% set dropdownClasses = 'hover:bg-blue-200 flex items-center gap-2 rounded-md bg-white p-1 pl-2' %}
+			{% set dropdownClasses = 'hover:ring-2 ring-blue-500 ring-opacity-20 flex items-center gap-2 rounded-md bg-white p-1 pl-2' %}
 			{% set optionClasses = 'hover:bg-blue-200 flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm first-of-type:rounded-t-md last-of-type:rounded-b-md disabled:text-gray-500' %}
 			{% set sortIconClasses = 'invisible size-5 group-aria-[sort=ascending]:visible group-aria-[sort=descending]:visible group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180 bg-gray-200 inline-flex text-gray-900 group-hover:bg-gray-300 ml-1 rounded' %}
 
@@ -393,7 +393,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 
 				</div>
 
-				<a href="{{ url(craft.app.request.pathInfo) }}" class="hover:bg-blue-50 order-2 ml-auto flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm shadow">Reset</a>
+				<a href="{{ url(craft.app.request.pathInfo) }}" class="hover:ring-2 ring-blue-500 ring-opacity-20 order-2 ml-auto flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm">Reset</a>
 			</div>
 
 			{% for matrixBlockType in blockTypes %}
