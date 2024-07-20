@@ -1,7 +1,7 @@
 {#---
 
 # Matrix Report for Craft 3/4
-Version 4.0.4
+Version 4.0.5
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -52,6 +52,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 	</head>
 
 	<body>
+		<main>
 
 		{# Default field will be the field with the most matrix block types #}
 		{% set defaultPageBuilder = craft.query()
@@ -130,9 +131,9 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 		] %}
 
 		{# Define some large TW classes #}
-		{% set dropdownClasses = 'hover:bg-blue-50 flex items-center gap-2 rounded-md bg-white px-5 py-2.5 shadow' %}
-		{% set optionClasses = 'hover:bg-gray-50 flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm first-of-type:rounded-t-md last-of-type:rounded-b-md disabled:text-gray-500' %}
-		{% set sortIconClasses = 'ml-1 hidden size-5 group-aria-[sort=ascending]:inline-flex group-aria-[sort=descending]:inline-flex group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180' %}
+		{% set dropdownClasses = 'hover:bg-blue-200 flex items-center gap-2 rounded-md bg-white p-1 pl-2' %}
+		{% set optionClasses = 'hover:bg-blue-200 flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm first-of-type:rounded-t-md last-of-type:rounded-b-md disabled:text-gray-500' %}
+		{% set sortIconClasses = 'invisible size-5 group-aria-[sort=ascending]:visible group-aria-[sort=descending]:visible group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180 bg-gray-200 inline-flex text-gray-900 group-hover:bg-gray-300 ml-1 rounded' %}
 
 		{# SVG Icons so they can be resused #}
 		<svg width="0" height="0" class="hidden">
@@ -141,23 +142,23 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 				<path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z"></path>
 			</symbol>
 			<symbol xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" id="chevron-down">
-				<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+				<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
 			</symbol>
 			<symbol xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" id="arrows-down">
 				<path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd"></path>
 			</symbol>
 		</svg>
 
-		<div class="mx-auto my-8 flex max-w-[125rem] items-center justify-between space-x-4">
+		<div class="mx-auto my-8 flex flex-wrap gap-2 max-w-[125rem] items-center justify-between [@media(max-width:2020px)]:px-4 space-x-4 w-full">
 			<div class="flex items-center">
 				{% if craft.app.getEditionName() not in ['Solo', 'Team'] and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
 					<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo" target="_blank"></a>
 				{% else %}
-					<a href="{{ url('/') }}" class="ring-indigo-600/10 hover:bg-blue-50 rounded-md bg-white px-3 py-1 font-bold leading-8 ring-1 ring-inset" target="_blank">{{ systemName }}</a>
+					<a href="{{ url('/') }}" class="font-bold leading-8 relative text-base whitespace-nowrap 2xl:text-xl after:bg-blue-500 after:absolute after:h-1 after:w-full after:bottom-0 after:left-0 hover:after:w-0 after:transition-all after:duration-300" target="_blank">{{ systemName }}</a>
 				{% endif %}
 			</div>
 
-			<div class="flex items-center justify-center space-x-4">
+			<div class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center order-3 xl:order-2 w-full xl:w-auto">
 				<div
 					x-data="filterDropdown()"
 					x-on:keydown.escape.prevent.stop="close($refs.button)"
@@ -184,7 +185,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 						x-on:click.outside="close($refs.button)"
 						:id="$id('field-filter')"
 						style="display: none;"
-						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50 ring-1 ring-blue-500 ring-opacity-20"
 					>
 						{# getFieldsByType doesn't work on Craft 3 so querying DB instead
 							{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
@@ -197,7 +198,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 							.all()
 						%}
 						{% for field in matrixFields %}
-							<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-50' }}">
+							<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}" class="{{ optionClasses }} {{ field.handle == fieldFilter ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 								{{ field.name }}
 							</a>
 						{% endfor %}
@@ -230,11 +231,11 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 						x-on:click.outside="close($refs.button)"
 						:id="$id('block-filter')"
 						style="display: none;"
-						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50 ring-1 ring-blue-500 ring-opacity-20"
 					>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}" class="{{ optionClasses }} {{ blockFilter == '' ? 'bg-blue-50' }}">All Block Types</a>
+						<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}" class="{{ optionClasses }} {{ blockFilter == '' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">All Block Types</a>
 						{% for blockType in blocks %}
-							<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}" class="{{ optionClasses }} {{ blockType.handle == blockFilter ? 'bg-blue-50' }}">
+							<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}" class="{{ optionClasses }} {{ blockType.handle == blockFilter ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 								{{ blockType.name }}
 							</a>
 						{% endfor %}
@@ -268,17 +269,17 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 							x-on:click.outside="close($refs.button)"
 							:id="$id('site-filter')"
 							style="display: none;"
-							class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+							class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50 ring-1 ring-blue-500 ring-opacity-20"
 						>
-							<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-50' }}">All Sites</a>
+							<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}" class="{{ optionClasses }} {{ siteFilter == '' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">All Sites</a>
 							{# List primary site first, then others in alpha order #}
 							{% for site in craft.app.sites.allSites()|filter(site => site.primary == true) %}
-								<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+								<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 									{{ site.name }}
 								</a>
 							{% endfor %}
 							{% for site in craft.app.sites.allSites()|filter(site => site.primary == false)|sort((a, b) => a.name <=> b.name) %}
-								<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-50' }}">
+								<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}" class="{{ optionClasses }} {{ site.handle == siteFilter ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 									{{ site.name }}
 								</a>
 							{% endfor %}
@@ -312,30 +313,30 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 						x-on:click.outside="close($refs.button)"
 						:id="$id('entry-status')"
 						style="display: none;"
-						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50 ring-1 ring-blue-500 ring-opacity-20"
 					>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}" class="{{ optionClasses }} {{ statusFilter == '' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}" class="{{ optionClasses }} {{ statusFilter == '' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							All Statuses
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}" class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'live')|first.class }}" title="Live">
 								<span class="sr-only">Live</span>
 							</span>
 							Live
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}" class="{{ optionClasses }} {{ statusFilter == 'pending' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'pending')|first.class }}" title="Pending">
 								<span class="sr-only">Pending</span>
 							</span>
 							Pending
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}" class="{{ optionClasses }} {{ statusFilter == 'expired' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'expired')|first.class }}" title="Expired">
 								<span class="sr-only">Expired</span>
 							</span>
 							Expired
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}" class="{{ optionClasses }} {{ statusFilter == 'disabled' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
 								<span class="sr-only">Disabled</span>
 							</span>
@@ -370,18 +371,18 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 						x-on:click.outside="close($refs.button)"
 						:id="$id('block-status')"
 						style="display: none;"
-						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50"
+						class="absolute left-0 mt-2 w-max rounded-md bg-white shadow-md z-50 ring-1 ring-blue-500 ring-opacity-20"
 					>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}" class="{{ optionClasses }} {{ blockStatusFilter == '' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}" class="{{ optionClasses }} {{ blockStatusFilter == '' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							All Statuses
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'enabled')|first.class }}" title="Enabled">
 								<span class="sr-only">Enabled</span>
 							</span>
 							Enabled
 						</a>
-						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-50' }}">
+						<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}" class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? 'bg-blue-500 text-white hover:bg-blue-500' }}">
 							<span class="rounded-full size-4 block {{ statusColors|filter(s => s.status == 'disabled')|first.class }}" title="Disabled">
 								<span class="sr-only">Disabled</span>
 							</span>
@@ -392,7 +393,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 
 			</div>
 
-			<a href="{{ url(craft.app.request.pathInfo) }}" class="hover:bg-blue-50 flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm shadow">Reset</a>
+			<a href="{{ url(craft.app.request.pathInfo) }}" class="hover:bg-blue-50 flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm shadow order-2 ml-auto">Reset</a>
 		</div>
 
 		{% for matrixBlockType in blockTypes %}
@@ -402,51 +403,52 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 				(statusFilter == '' or block.owner.status == statusFilter) and
 				(blockStatusFilter == '' or block.status == blockStatusFilter)
 			) %}
-			<table class="sortable relative mx-auto my-8 w-full max-w-[125rem] text-left">
+			<table class="sortable relative mx-auto my-8 w-full max-w-[125rem] text-left ring-1 ring-blue-500 ring-opacity-20 sm:rounded-lg overflow-hidden">
 				<thead class="sticky top-0">
-					<tr class="border-gray border border-b bg-white">
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+					<tr class="bg-white">
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="sr-only">Count</span>
+							<svg class="{{ sortIconClasses }} !ml-0"><use xlink:href="#chevron-down"></use></svg>
 						</th>
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							Title
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="group-hover:underline">Title</span>
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 						</th>
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							URI
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="group-hover:underline">URI</span>
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 						</th>
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							Section
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="group-hover:underline">Section</span>
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 						</th>
 						{% if sites %}
-							<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-								Site
-								<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+							<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+								<span class="group-hover:underline">Site</span>
+								<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 							</th>
 						{% endif %}
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							Entry
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="group-hover:underline">Entry</span>
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 						</th>
-						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1 hover:underline">
-							Block
-							<svg class="{{ sortIconClasses }}"><use xlink:href="#arrows-down"></use></svg>
+						<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
+							<span class="group-hover:underline">Block</span>
+							<svg class="{{ sortIconClasses }}"><use xlink:href="#chevron-down"></use></svg>
 						</th>
 						<th colspan="{{ sites == false and (prod or staging or dev) ? 4 : 1 }}" class="no-sort select-none whitespace-nowrap px-3 py-1">
 							Links
 						</th>
 					</tr>
-					<tr class="bg-black !text-white">
+					<tr class="bg-blue-600 !text-white">
 						<th class="px-3 py-1">{{ blockQuery|length }}</th>
 						<th class="px-3 py-1" colspan="{{ sites ? 10 : 9 }}"><h1>{{ matrixBlockType.name }}</h1></th>
 					</tr>
 				</thead>
 
-				<tbody>
+				<tbody class="divide-y divide-gray">
 					{% for block in blockQuery %}
-						<tr class="border-gray border border-b hover:bg-gray-100">
+						<tr class="hover:bg-gray-100">
 							<td class="px-3 py-1">{{ loop.index }}</td>
 							<td class="px-3 py-1">{{ block.owner.title }}</td>
 							<td class="px-3 py-1">
@@ -466,13 +468,13 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 							{% if sites %}
 								<td class="px-3 py-1">{{ block.owner.site }}</td>
 							{% endif %}
-							<td class="w-16 px-3 py-1 text-center">
-								<span class="mx-auto block size-4 rounded-full {{ statusColors|filter(s => s.status == block.owner.status)|first.class }}" title="{{ block.owner.status|capitalize }}">
+							<td class="w-16 px-3 py-1">
+								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == block.owner.status)|first.class }}" title="{{ block.owner.status|capitalize }}">
 									<span class="sr-only">{{ block.owner.status|capitalize }}</span>
 								</span>
 							</td>
-							<td class="w-16 px-3 py-1 text-center">
-								<span class="mx-auto block size-4 rounded-full {{ statusColors|filter(s => s.status == block.status)|first.class }}" title="{{ block.status|capitalize }}">
+							<td class="w-16 px-3 py-1">
+								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == block.status)|first.class }}" title="{{ block.status|capitalize }}">
 									<span class="sr-only">{{ block.status|capitalize }}</span>
 								</span>
 							</td>
@@ -496,7 +498,7 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 							<td class="w-11 px-3 py-1">
 								{# Edit URL should be for Prod #}
 								<a href="{{ prod ? block.owner.cpEditUrl|replace(currentSite.baseUrl, prod) : block.owner.cpEditUrl }}" class="hover:text-blue-500" target="_blank">
-									<svg class="mx-auto size-5"><use xlink:href="#pencil-square"></use></svg>
+									<svg class="mx-auto size-5" title="Edit entry in Craft"><use xlink:href="#pencil-square"></use></svg>
 								</a>
 							</td>
 						</tr>
@@ -531,6 +533,6 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 				)
 			)});
 		{% endjs %}
-
+	</main>
 	</body>
 </html>
