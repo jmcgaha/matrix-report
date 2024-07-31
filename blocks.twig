@@ -1,7 +1,7 @@
 {#---
 
-# Matrix Report for Craft 3/4
-Version 4.0.5
+# Matrix Report for Craft 3/4/5
+Version 5.0.0
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -24,7 +24,6 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 - Sometimes orphan matrix blocks exist on a site even after running `craft utils/prune-orphaned-matrix-blocks` and this will cause this template to error that gives the ownerId of the orphan. Add that ID to an env named `MATRIX_REPORT_OWNER_FILTER`. For multiple values separate with a comma. It should look like: `MATRIX_REPORT_OWNER_FILTER=1989,2038`
 
 ## TODO
-- Develop a version for Craft 5
 - See if there is a way to provide multi-environment entry urls for multi-site installs (currently it hides the urls in this situation)
 - Matrix blocks inside of Neo behave differently and do not output data about the page
 
@@ -55,15 +54,31 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 		<main>
 
 			{# Default field will be the field with the most matrix block types #}
-			{% set defaultPageBuilder = craft.query()
-				.select(['fieldId', 'COUNT(*) as fieldCount'])
-				.from('{{%matrixblocktypes}}')
-				.groupBy('fieldId')
-				.orderBy('fieldCount desc')
-				.limit(1)
-				.all()
-			%}
-			{% set defaultPageBuilder = craft.app.fields.getFieldById((defaultPageBuilder|first).fieldId).handle %}
+			{% set defaultPageBuilder = null %}
+			{% if craft.app.version() >= 5 %}
+				{% set fields = [] %}
+				{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
+					{% set fields = fields|merge([{
+							id: field.id,
+							handle: field.handle,
+							name: field.name,
+							entryTypes: field.entryTypes,
+							entryTypeCount: field.entryTypes|length,
+					}]) %}
+				{% endfor %}
+				{% set fields = fields|sort((a, b) => a.entryTypeCount <=> b.entryTypeCount)|reverse %}
+				{% set defaultPageBuilder = craft.app.fields.getFieldById((fields[0].id)).handle %}
+			{% else %}
+				{% set defaultPageBuilder = craft.query()
+					.select(['fieldId', 'COUNT(*) as fieldCount'])
+					.from('{{%matrixblocktypes}}')
+					.groupBy('fieldId')
+					.orderBy('fieldCount desc')
+					.limit(1)
+					.all()
+				%}
+				{% set defaultPageBuilder = craft.app.fields.getFieldById((defaultPageBuilder|first).fieldId).handle %}
+			{%  endif %}
 
 			{# Hide all site filters if there is only 1 site #}
 			{% set sites = (craft.app.sites.allSites()|length) > 1 ? true : false %}
@@ -87,13 +102,18 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 			{% set fieldId = craft.app.fields.getFieldByHandle(fieldFilter).id %}
 
 			{# Get Block Types for the chosen Matrix field #}
-			{% set blocks = craft.query()
-				.select(['handle', 'name'])
-				.from('{{%matrixblocktypes}}')
-				.where({'fieldId': fieldId})
-				.orderBy('sortOrder')
-				.all()
-			%}
+			{% set blocks = null %}
+			{% if craft.app.version() >= 5 %}
+				{% set blocks = fields|filter(field => field.id == fieldId)|first.entryTypes %}
+			{% else %}
+				{% set blocks = craft.query()
+					.select(['handle', 'name'])
+					.from('{{%matrixblocktypes}}')
+					.where({'fieldId': fieldId})
+					.orderBy('sortOrder')
+					.all()
+				%}
+			{% endif %}
 
 			{# Filter blocks if there is a type filter selected #}
 			{% set blockTypes = blockFilter ? blocks|filter(matrixBlockType => matrixBlockType.handle == blockFilter) : blocks %}
@@ -397,12 +417,22 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 			</div>
 
 			{% for matrixBlockType in blockTypes %}
-				{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
-					block => block.ownerId not in ownerId and
-					(siteFilter == '' or block.owner.site.handle == siteFilter) and
-					(statusFilter == '' or block.owner.status == statusFilter) and
-					(blockStatusFilter == '' or block.status == blockStatusFilter)
-				) %}
+				{% set blockQuery = null %}
+				{% if craft.app.version() >= 5 %}
+					{% set blockQuery = craft.entries.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
+						block => block.ownerId not in ownerId and
+						(siteFilter == '' or block.owner.site.handle == siteFilter) and
+						(statusFilter == '' or block.owner.status == statusFilter) and
+						(blockStatusFilter == '' or block.status == blockStatusFilter)
+					) %}
+				{% else %}
+					{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
+						block => block.ownerId not in ownerId and
+						(siteFilter == '' or block.owner.site.handle == siteFilter) and
+						(statusFilter == '' or block.owner.status == statusFilter) and
+						(blockStatusFilter == '' or block.status == blockStatusFilter)
+					) %}
+				{% endif %}
 				<table class="sortable ring-blue-500 relative mx-auto my-8 w-full max-w-[125rem] overflow-hidden text-left ring-1 ring-opacity-20 sm:rounded-lg">
 					<thead class="sticky top-0">
 						<tr class="bg-white">
