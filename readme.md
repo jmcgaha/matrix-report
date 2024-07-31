@@ -1,5 +1,5 @@
-# Matrix Report for Craft 3/4
-Version 4.0.5
+# Matrix Report for Craft 3/4/5
+Version 5.0.0
 
 On sites with large matrix page-builders it can be difficult to know if and when different blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 - Matrix field
@@ -22,6 +22,5 @@ Any entry, category, or global associated with a Matrix block assigned to it wil
 - Sometimes orphan matrix blocks exist on a site even after running `craft utils/prune-orphaned-matrix-blocks` and this will cause this template to error that gives the ownerId of the orphan. Add that ID to an env named `MATRIX_REPORT_OWNER_FILTER`. For multiple values separate with a comma. It should look like: `MATRIX_REPORT_OWNER_FILTER=1989,2038`
 
 ## TODO
-- Develop a version for Craft 5
 - See if there is a way to provide multi-environment entry urls for multi-site installs (currently it hides the urls in this situation)
 - Matrix blocks inside of Neo behave differently and do not output data about the page
