@@ -169,7 +169,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 				</symbol>
 			</svg>
 
-			<div class="mx-auto my-8 flex flex-wrap gap-2 max-w-[125rem] items-center justify-between [@media(max-width:2020px)]:px-4 space-x-4 w-full">
+			<div class="mx-auto my-8 flex flex-wrap gap-2 max-w-[125rem] items-center justify-between [@media(max-width:126.25rem)]:px-4 space-x-4 w-full">
 				<div class="flex items-center">
 					{% if craft.app.getEditionName() not in ['Solo', 'Team'] and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
 						<a href="{{ url('/') }}"><img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo" target="_blank"></a>
@@ -433,7 +433,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 						(blockStatusFilter == '' or block.status == blockStatusFilter)
 					) %}
 				{% endif %}
-				<table class="sortable ring-blue-500 relative mx-auto my-8 w-full max-w-[125rem] overflow-hidden text-left ring-1 ring-opacity-20 sm:rounded-lg">
+				<table class="sortable ring-blue-500 relative mx-auto my-8 w-full max-w-[125rem] overflow-hidden text-left ring-1 ring-opacity-20 [@media(min-width:125rem)]:rounded-lg">
 					<thead class="sticky top-0">
 						<tr class="bg-white">
 							<th class="group cursor-pointer select-none whitespace-nowrap px-3 py-1">
