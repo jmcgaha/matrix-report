@@ -100,6 +100,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 			{# Query params and their defaults #}
 			{% set fieldFilter       = craft.app.request.getQueryParam('field') ?? defaultPageBuilder %}
 			{% set blockFilter       = craft.app.request.getQueryParam('type') ?? null %}
+			{% set sectionFilter     = craft.app.request.getQueryParam('section') %}
 			{% set siteFilter        = craft.app.request.getQueryParam('site') %}
 			{% set statusFilter      = craft.app.request.getQueryParam('status') %}
 			{% set blockStatusFilter = craft.app.request.getQueryParam('blockstatus') %}
@@ -268,6 +269,55 @@ Any entry, category, or global associated with a Matrix block attached will outp
 						</div>
 					</div>
 
+					<div
+						x-data="filterDropdown()"
+						x-on:keydown.escape.prevent.stop="close($refs.button)"
+						x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+						x-id="['section-filter']"
+						class="relative"
+					>
+						<button
+							x-ref="button"
+							x-on:click="toggle()"
+							:aria-expanded="open"
+							:aria-controls="$id('section-filter')"
+							type="button"
+							class="{{ dropdownClasses }}"
+						>
+							{% if craft.app.version() >= 5 %}
+								Content Type{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+							{% else %}
+								Content Type{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.sections.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+							{% endif %}
+							<svg class="text-gray-400 h-5 w-5"><use xlink:href="#chevron-down"></use></svg>
+						</button>
+
+						<div
+							x-ref="panel"
+							x-show="open"
+							x-transition.origin.top.left
+							x-on:click.outside="close($refs.button)"
+							:id="$id('section-filter')"
+							style="display: none;"
+							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20"
+						>
+							<a href="{{ url(craft.app.request.absoluteUrl, {category: null, global: null, section: null}) }}" class="{{ optionClasses }} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">All Sections</a>
+							{% if craft.app.version() >= 5 %}
+								{% for section in craft.app.entries.allSections() %}
+									<a href="{{ url(craft.app.request.absoluteUrl, {category: null, global: null, section: section.handle}) }}" class="{{ optionClasses }} {{ section.handle == sectionFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										{{ section.name }}
+									</a>
+								{% endfor %}
+							{% else %}
+								{% for section in craft.app.sections.allSections() %}
+									<a href="{{ url(craft.app.request.absoluteUrl, {category: null, global: null, section: section.handle}) }}" class="{{ optionClasses }} {{ section.handle == sectionFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										{{ section.name }}
+									</a>
+								{% endfor %}
+							{% endif %}
+						</div>
+					</div>
+
 					{% if sites %}
 						<div
 							x-data="filterDropdown()"
@@ -427,6 +477,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 				{% if craft.app.version() >= 5 %}
 					{% set blockQuery = craft.entries.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
 						block => block.ownerId not in ownerId and
+						(sectionFilter == '' or (block.owner.section and block.owner.section.handle == sectionFilter)) and
 						(siteFilter == '' or block.owner.site.handle == siteFilter) and
 						(statusFilter == '' or block.owner.status == statusFilter) and
 						(blockStatusFilter == '' or block.status == blockStatusFilter)
@@ -434,6 +485,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 				{% else %}
 					{% set blockQuery = craft.matrixBlocks.fieldId(fieldId).orderBy('id').site('*').type(matrixBlockType.handle).anyStatus().all()|filter(
 						block => block.ownerId not in ownerId and
+						(sectionFilter == '' or (block.owner.section and block.owner.section.handle == sectionFilter)) and
 						(siteFilter == '' or block.owner.site.handle == siteFilter) and
 						(statusFilter == '' or block.owner.status == statusFilter) and
 						(blockStatusFilter == '' or block.status == blockStatusFilter)
