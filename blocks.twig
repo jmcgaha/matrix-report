@@ -285,9 +285,9 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							class="{{ dropdownClasses }}"
 						>
 							{% if craft.app.version() >= 5 %}
-								Content Type{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+								Section{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
 							{% else %}
-								Content Type{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.sections.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+								Section{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.sections.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
 							{% endif %}
 							<svg class="text-gray-400 h-5 w-5"><use xlink:href="#chevron-down"></use></svg>
 						</button>
