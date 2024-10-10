@@ -19,7 +19,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
    - `MATRIX_REPORT_PROD_URL`
    - `MATRIX_REPORT_STAGE_URL`
    - `MATRIX_REPORT_DEV_URL`
-3. Login to your control panel as an admin. There is a `requirePermission` conditional in the template so you must be logged in with permissions to access the control panel otherwise it will redirect to your front-end login page.
+3. Login to your control panel. There is a `requirePermission` conditional in the template so you must be logged in with permissions to access the control panel otherwise it will redirect to your front-end login page.
 4. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
 
 ## Gotcha’s

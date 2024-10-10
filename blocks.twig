@@ -21,7 +21,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
    - `MATRIX_REPORT_PROD_URL`
    - `MATRIX_REPORT_STAGE_URL`
    - `MATRIX_REPORT_DEV_URL`
-3. Login to your control panel as an admin. There is a `requirePermission` conditional in the template so you must be logged in with permissions to access the control panel otherwise it will redirect to your front-end login page.
+3. Login to your control panel. There is a `requirePermission` conditional in the template so you must be logged in with permissions to access the control panel otherwise it will redirect to your front-end login page.
 4. Go to the url where you placed the template, for me that is https://localsite.test/queries/blocks
 
 ## Gotcha’s
@@ -73,7 +73,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 					}]) %}
 				{% endfor %}
 				{% set fields = fields|sort((a, b) => a.entryTypeCount <=> b.entryTypeCount)|reverse %}
-				{% set defaultPageBuilder = craft.app.fields.getFieldById((fields[0].id)).handle %}
+				{% set defaultPageBuilder = craft.app.fields.getFieldById(fields[0].id).handle %}
 			{% else %}
 				{% set defaultPageBuilder = craft.query()
 					.select(['fieldId', 'COUNT(*) as fieldCount'])
@@ -83,7 +83,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 					.limit(1)
 					.all()
 				%}
-				{% set defaultPageBuilder = craft.app.fields.getFieldById((defaultPageBuilder|first).fieldId).handle %}
+				{% set defaultPageBuilder = craft.app.fields.getFieldById(defaultPageBuilder[0].fieldId).handle %}
 			{%  endif %}
 
 			{# Hide all site filters if there is only 1 site #}
@@ -101,6 +101,8 @@ Any entry, category, or global associated with a Matrix block attached will outp
 			{% set fieldFilter       = craft.app.request.getQueryParam('field') ?? defaultPageBuilder %}
 			{% set blockFilter       = craft.app.request.getQueryParam('type') ?? null %}
 			{% set sectionFilter     = craft.app.request.getQueryParam('section') %}
+			{% set globalFilter      = craft.app.request.getQueryParam('global') %}
+			{% set categoryFilter    = craft.app.request.getQueryParam('category') %}
 			{% set siteFilter        = craft.app.request.getQueryParam('site') %}
 			{% set statusFilter      = craft.app.request.getQueryParam('status') %}
 			{% set blockStatusFilter = craft.app.request.getQueryParam('blockstatus') %}
