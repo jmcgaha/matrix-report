@@ -2,12 +2,13 @@
 
 # Matrix Report for Craft 3/4/5
 
-Version 5.0.1
+Version 5.0.2
 
 Sites with large Matrix page-builders can make it difficult to know if and when different Matrix blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 
 - Matrix field
 - Block types for that field
+- Section block type is used on
 - Site block is used on (when more than 1 site exists)
 - Entry status of parent entry
 - Block status
@@ -146,12 +147,17 @@ Any entry, category, or global associated with a Matrix block attached will outp
 			] %}
 
 			{# Define some large TW classes #}
-			{% set dropdownClasses =
+			{% set dropdownButtonClasses =
 				'hover:ring-2 ring-blue-500 ring-opacity-20 flex items-center gap-2 rounded-md bg-white p-1 pl-2 focus:ring-2'
+			%}
+			{% set dropdownClasses =
+				'ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20'
 			%}
 			{% set optionClasses =
 				'hover:bg-blue-200 flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm first-of-type:rounded-t-md last-of-type:rounded-b-md disabled:text-gray-500'
 			%}
+			{% set optionSelectedClasses = 'bg-blue-500 hover:bg-blue-500 text-white' %}
+			{% set optionResetClasses = 'border-b border-blue-100' %}
 			{% set sortIconClasses =
 				'invisible size-5 group-aria-[sort=ascending]:visible group-aria-[sort=descending]:visible group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180 bg-gray-200 inline-flex text-gray-900 group-hover:bg-gray-300 ml-1 rounded'
 			%}
@@ -205,7 +211,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							:aria-expanded="open"
 							:aria-controls="$id('field-filter')"
 							type="button"
-							class="{{ dropdownClasses }}">
+							class="{{ dropdownButtonClasses }}">
 							Matrix Field{{ fieldFilter
 								? (': <span class="text-[.8em]">' ~ craft.app.fields.getFieldByHandle(fieldFilter).name
 									~ '</span>')|raw }}
@@ -220,7 +226,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							x-on:click.outside="close($refs.button)"
 							:id="$id('field-filter')"
 							style="display: none;"
-							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+							class="{{ dropdownClasses }}">
 							{# getFieldsByType doesn't work on Craft 3 so querying DB instead
 								{% for field in craft.app.fields.getFieldsByType('craft\\fields\\Matrix') %}
 							#}
@@ -234,9 +240,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							%}
 							{% for field in matrixFields %}
 								<a href="{{ url(craft.app.request.pathInfo, 'field=' ~ field.handle) }}"
-									class="{{
-									optionClasses
-									}} {{ field.handle == fieldFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+									class="{{ optionClasses }} {{ field.handle == fieldFilter ? optionSelectedClasses }}">
 									{{ field.name }}
 								</a>
 							{% endfor %}
@@ -253,7 +257,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							:aria-expanded="open"
 							:aria-controls="$id('block-filter')"
 							type="button"
-							class="{{ dropdownClasses }}">
+							class="{{ dropdownButtonClasses }}">
 							Block Type{{ blockFilter ? (': <span class="text-[.8em]">' ~ blockTypes|first.name ~ '</span>')|raw }}
 							<svg class="text-gray-400 h-5 w-5">
 								<use xlink:href="#chevron-down"></use>
@@ -266,18 +270,14 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							x-on:click.outside="close($refs.button)"
 							:id="$id('block-filter')"
 							style="display: none;"
-							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}"
-								class="{{
-								optionClasses
-								}} {{ blockFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">
+								class="{{ optionClasses }} {{ blockFilter == '' ? optionSelectedClasses : optionResetClasses }}">
 								All Block Types
 							</a>
 							{% for blockType in blocks %}
 								<a href="{{ url(craft.app.request.absoluteUrl, 'type=' ~ blockType.handle) }}"
-									class="{{
-									optionClasses
-									}} {{ blockType.handle == blockFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+									class="{{ optionClasses }} {{ blockType.handle == blockFilter ? optionSelectedClasses }}">
 									{{ blockType.name }}
 								</a>
 							{% endfor %}
@@ -294,7 +294,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							:aria-expanded="open"
 							:aria-controls="$id('section-filter')"
 							type="button"
-							class="{{ dropdownClasses }}">
+							class="{{ dropdownButtonClasses }}">
 							{% if craft.app.version() >= 5 %}
 								Section{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
 							{% else %}
@@ -311,11 +311,11 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							x-on:click.outside="close($refs.button)"
 							:id="$id('section-filter')"
 							style="display: none;"
-							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
 								class="{{
 								optionClasses
-								}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">
+								}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? optionSelectedClasses : optionResetClasses }}">
 								All Sections
 							</a>
 							{% if craft.app.version() >= 5 %}
@@ -326,9 +326,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 											{ category: null, global: null, section: section.handle }
 										)
 										}}"
-										class="{{
-										optionClasses
-										}} {{ section.handle == sectionFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										class="{{ optionClasses }} {{ section.handle == sectionFilter ? optionSelectedClasses }}">
 										{{ section.name }}
 									</a>
 								{% endfor %}
@@ -340,9 +338,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 											{ category: null, global: null, section: section.handle }
 										)
 										}}"
-										class="{{
-										optionClasses
-										}} {{ section.handle == sectionFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										class="{{ optionClasses }} {{ section.handle == sectionFilter ? optionSelectedClasses }}">
 										{{ section.name }}
 									</a>
 								{% endfor %}
@@ -361,7 +357,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								:aria-expanded="open"
 								:aria-controls="$id('site-filter')"
 								type="button"
-								class="{{ dropdownClasses }}">
+								class="{{ dropdownButtonClasses }}">
 								Site{{ siteFilter
 									? (': <span class="text-[.8em]">' ~ craft.app.sites.getSiteByHandle(siteFilter).name
 										~ '</span>')|raw }}
@@ -376,19 +372,15 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								x-on:click.outside="close($refs.button)"
 								:id="$id('site-filter')"
 								style="display: none;"
-								class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+								class="{{ dropdownClasses }}">
 								<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}"
-									class="{{
-									optionClasses
-									}} {{ siteFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">
+									class="{{ optionClasses }} {{ siteFilter == '' ? optionSelectedClasses : optionResetClasses }}">
 									All Sites
 								</a>
 								{# List primary site first, then others in alpha order #}
 								{% for site in craft.app.sites.allSites()|filter(site => site.primary == true) %}
 									<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}"
-										class="{{
-										optionClasses
-										}} {{ site.handle == siteFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										class="{{ optionClasses }} {{ site.handle == siteFilter ? optionSelectedClasses }}">
 										{{ site.name }}
 									</a>
 								{% endfor %}
@@ -396,9 +388,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 									|filter(site => site.primary == false)
 									|sort((a, b) => a.name <=> b.name) %}
 									<a href="{{ url(craft.app.request.absoluteUrl, 'site=' ~ site.handle) }}"
-										class="{{
-										optionClasses
-										}} {{ site.handle == siteFilter ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+										class="{{ optionClasses }} {{ site.handle == siteFilter ? optionSelectedClasses }}">
 										{{ site.name }}
 									</a>
 								{% endfor %}
@@ -416,7 +406,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							:aria-expanded="open"
 							:aria-controls="$id('entry-status')"
 							type="button"
-							class="{{ dropdownClasses }}">
+							class="{{ dropdownButtonClasses }}">
 							Entry Status{{ statusFilter
 								? (': <span class="text-[.8em]">' ~ (statusFilter|capitalize) ~ '</span>')|raw }}
 							<svg class="text-gray-400 h-5 w-5">
@@ -430,15 +420,13 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							x-on:click.outside="close($refs.button)"
 							:id="$id('entry-status')"
 							style="display: none;"
-							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}"
-								class="{{
-								optionClasses
-								}} {{ statusFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">
+								class="{{ optionClasses }} {{ statusFilter == '' ? optionSelectedClasses : optionResetClasses }}">
 								All Statuses
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}"
-								class="{{ optionClasses }} {{ statusFilter == 'live' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ statusFilter == 'live' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'live')|first.class }}"
 									title="Live">
 									<span class="sr-only">Live</span>
@@ -446,9 +434,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								Live
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=pending') }}"
-								class="{{
-								optionClasses
-								}} {{ statusFilter == 'pending' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ statusFilter == 'pending' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'pending')|first.class }}"
 									title="Pending">
 									<span class="sr-only">Pending</span>
@@ -456,9 +442,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								Pending
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=expired') }}"
-								class="{{
-								optionClasses
-								}} {{ statusFilter == 'expired' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ statusFilter == 'expired' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'expired')|first.class }}"
 									title="Expired">
 									<span class="sr-only">Expired</span>
@@ -466,9 +450,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								Expired
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=disabled') }}"
-								class="{{
-								optionClasses
-								}} {{ statusFilter == 'disabled' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ statusFilter == 'disabled' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'disabled')|first.class }}"
 									title="Disabled">
 									<span class="sr-only">Disabled</span>
@@ -488,7 +470,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							:aria-expanded="open"
 							:aria-controls="$id('block-status')"
 							type="button"
-							class="{{ dropdownClasses }}">
+							class="{{ dropdownButtonClasses }}">
 							Block Status{{ blockStatusFilter
 								? (': <span class="text-[.8em]">' ~ (blockStatusFilter|capitalize) ~ '</span>')|raw }}
 							<svg class="text-gray-400 h-5 w-5">
@@ -502,17 +484,13 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							x-on:click.outside="close($refs.button)"
 							:id="$id('block-status')"
 							style="display: none;"
-							class="ring-blue-500 absolute left-0 z-50 mt-2 w-max rounded-md bg-white shadow-md ring-1 ring-opacity-20">
+							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}"
-								class="{{
-								optionClasses
-								}} {{ blockStatusFilter == '' ? 'bg-blue-500 hover:bg-blue-500 text-white' : 'border-b border-blue-100' }}">
+								class="{{ optionClasses }} {{ blockStatusFilter == '' ? optionSelectedClasses : optionResetClasses }}">
 								All Statuses
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}"
-								class="{{
-								optionClasses
-								}} {{ blockStatusFilter == 'enabled' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ blockStatusFilter == 'enabled' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'enabled')|first.class }}"
 									title="Enabled">
 									<span class="sr-only">Enabled</span>
@@ -520,9 +498,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								Enabled
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=disabled') }}"
-								class="{{
-								optionClasses
-								}} {{ blockStatusFilter == 'disabled' ? 'bg-blue-500 hover:bg-blue-500 text-white' }}">
+								class="{{ optionClasses }} {{ blockStatusFilter == 'disabled' ? optionSelectedClasses }}">
 								<span class="block size-4 rounded-full {{ statusColors|filter(s => s.status == 'disabled')|first.class }}"
 									title="Disabled">
 									<span class="sr-only">Disabled</span>

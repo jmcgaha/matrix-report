@@ -1,11 +1,12 @@
 # Matrix Report for Craft 3/4/5
 
-Version 5.0.1
+Version 5.0.2
 
 Sites with large Matrix page-builders can make it difficult to know if and when different Matrix blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 
 - Matrix field
 - Block types for that field
+- Section block type is used on
 - Site block is used on (when more than 1 site exists)
 - Entry status of parent entry
 - Block status
