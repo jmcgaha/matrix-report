@@ -185,11 +185,19 @@ Any entry, category, or global associated with a Matrix block attached will outp
 					{% if
 						craft.app.getEditionName() not in ['Solo', 'Team']
 							and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
-						<a href="{{ url('/') }}">
-							<img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}"
-								class="max-h-11"
-								alt="{{ systemName }} logo"
-								target="_blank" />
+						<a href="{{ url('/') }}" target="_blank">
+							{% if '.svg' in [craft.rebrand.getIcon().url(), craft.rebrand.getLogo().url()] %}
+								<img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}"
+									class="max-h-11"
+									alt="{{ systemName }} logo" />
+							{% else %}
+								{{
+									svg(craft.rebrand.getIcon() ? craft.rebrand.getIcon().path() : craft.rebrand.getLogo().path())|attr({
+										class: 'max-h-11 w-auto',
+										title: systemName ~ ' logo'
+									})
+								}}
+							{% endif %}
 						</a>
 					{% else %}
 						<a href="{{ url('/') }}"
