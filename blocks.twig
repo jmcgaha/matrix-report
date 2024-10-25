@@ -2,13 +2,13 @@
 
 # Matrix Report for Craft 3/4/5
 
-Version 5.0.2
+Version 5.1.0
 
 Sites with large Matrix page-builders can make it difficult to know if and when different Matrix blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 
 - Matrix field
 - Block types for that field
-- Section block type is used on
+- Section, Category, or Global the block type is used on
 - Site block is used on (when more than 1 site exists)
 - Entry status of parent entry
 - Block status
@@ -157,7 +157,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 				'hover:bg-blue-200 flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm first-of-type:rounded-t-md last-of-type:rounded-b-md disabled:text-gray-500'
 			%}
 			{% set optionSelectedClasses = 'bg-blue-500 hover:bg-blue-500 text-white' %}
-			{% set optionResetClasses = 'border-b border-blue-100' %}
+			{% set optionResetClasses = 'border-b border-blue-100 font-semibold [&:not(:first-child)]:border-t' %}
 			{% set sortIconClasses =
 				'invisible size-5 group-aria-[sort=ascending]:visible group-aria-[sort=descending]:visible group-aria-[sort=ascending]:rotate-0 group-aria-[sort=descending]:rotate-180 bg-gray-200 inline-flex text-gray-900 group-hover:bg-gray-300 ml-1 rounded'
 			%}
@@ -272,7 +272,9 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							style="display: none;"
 							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'type=') }}"
-								class="{{ optionClasses }} {{ blockFilter == '' ? optionSelectedClasses : optionResetClasses }}">
+								class="{{
+								optionClasses
+								}} {{ blockFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 								All Block Types
 							</a>
 							{% for blockType in blocks %}
@@ -296,9 +298,21 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							type="button"
 							class="{{ dropdownButtonClasses }}">
 							{% if craft.app.version() >= 5 %}
-								Section{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+								Section{{ sectionFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.entries.getSectionByHandle(sectionFilter).name
+										~ '</span>')|raw }}{{ categoryFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.categories.getGroupByHandle(categoryFilter).name
+										~ '</span>')|raw }}{{ globalFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.globals.getSetByHandle(globalFilter).name
+										~ '</span>')|raw }}
 							{% else %}
-								Section{{ sectionFilter ? (': <span class="text-[.8em]">' ~ craft.app.sections.getSectionByHandle(sectionFilter).name ~ '</span>')|raw }}
+								Section{{ sectionFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.sections.getSectionByHandle(sectionFilter).name
+										~ '</span>')|raw }}{{ categoryFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.categories.getGroupByHandle(categoryFilter).name
+										~ '</span>')|raw }}{{ globalFilter
+									? (': <span class="text-[.8em]">' ~ craft.app.globals.getSetByHandle(globalFilter).name
+										~ '</span>')|raw }}
 							{% endif %}
 							<svg class="text-gray-400 h-5 w-5">
 								<use xlink:href="#chevron-down"></use>
@@ -315,7 +329,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
 								class="{{
 								optionClasses
-								}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? optionSelectedClasses : optionResetClasses }}">
+								}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 								All Sections
 							</a>
 							{% if craft.app.version() >= 5 %}
@@ -340,6 +354,46 @@ Any entry, category, or global associated with a Matrix block attached will outp
 										}}"
 										class="{{ optionClasses }} {{ section.handle == sectionFilter ? optionSelectedClasses }}">
 										{{ section.name }}
+									</a>
+								{% endfor %}
+							{% endif %}
+
+							{% if craft.app.globals.allSets()|length %}
+								<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
+									class="{{
+									optionClasses
+									}} {{ globalFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
+									All Globals
+								</a>
+								{% for global in craft.app.globals.allSets() %}
+									<a href="{{
+										url(
+											craft.app.request.absoluteUrl,
+											{ category: null, global: global.handle, section: null }
+										)
+										}}"
+										class="{{ optionClasses }} {{ global.handle == globalFilter ? optionSelectedClasses }}">
+										{{ global.name }}
+									</a>
+								{% endfor %}
+							{% endif %}
+
+							{% if craft.app.categories.allGroups()|length %}
+								<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
+									class="{{
+									optionClasses
+									}} {{ categoryFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
+									All Categories
+								</a>
+								{% for category in craft.app.categories.allGroups() %}
+									<a href="{{
+										url(
+											craft.app.request.absoluteUrl,
+											{ category: category.handle, global: null, section: null }
+										)
+										}}"
+										class="{{ optionClasses }} {{ category.handle == categoryFilter ? optionSelectedClasses }}">
+										{{ category.name }}
 									</a>
 								{% endfor %}
 							{% endif %}
@@ -374,7 +428,9 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								style="display: none;"
 								class="{{ dropdownClasses }}">
 								<a href="{{ url(craft.app.request.absoluteUrl, 'site=') }}"
-									class="{{ optionClasses }} {{ siteFilter == '' ? optionSelectedClasses : optionResetClasses }}">
+									class="{{
+									optionClasses
+									}} {{ siteFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 									All Sites
 								</a>
 								{# List primary site first, then others in alpha order #}
@@ -422,7 +478,9 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							style="display: none;"
 							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=') }}"
-								class="{{ optionClasses }} {{ statusFilter == '' ? optionSelectedClasses : optionResetClasses }}">
+								class="{{
+								optionClasses
+								}} {{ statusFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 								All Statuses
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'status=live') }}"
@@ -486,7 +544,9 @@ Any entry, category, or global associated with a Matrix block attached will outp
 							style="display: none;"
 							class="{{ dropdownClasses }}">
 							<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=') }}"
-								class="{{ optionClasses }} {{ blockStatusFilter == '' ? optionSelectedClasses : optionResetClasses }}">
+								class="{{
+								optionClasses
+								}} {{ blockStatusFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 								All Statuses
 							</a>
 							<a href="{{ url(craft.app.request.absoluteUrl, 'blockstatus=enabled') }}"
@@ -527,6 +587,10 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								and (siteFilter == '' or block.owner.site.handle == siteFilter)
 								and (statusFilter == '' or block.owner.status == statusFilter)
 								and (blockStatusFilter == '' or block.status == blockStatusFilter)
+								and (globalFilter == ''
+									or (block.owner.fieldLayout.type ends with 'GlobalSet' and block.owner.handle == globalFilter))
+								and (categoryFilter == ''
+									or (block.owner.fieldLayout.type ends with 'Category' and block.owner.group.handle == categoryFilter))
 						)
 					%}
 				{% else %}
@@ -539,6 +603,10 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								and (siteFilter == '' or block.owner.site.handle == siteFilter)
 								and (statusFilter == '' or block.owner.status == statusFilter)
 								and (blockStatusFilter == '' or block.status == blockStatusFilter)
+								and (globalFilter == ''
+									or (block.owner.fieldLayout.type ends with 'GlobalSet' and block.owner.handle == globalFilter))
+								and (categoryFilter == ''
+									or (block.owner.fieldLayout.type ends with 'Category' and block.owner.group.handle == categoryFilter))
 						)
 					%}
 				{% endif %}
