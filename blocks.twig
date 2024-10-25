@@ -362,7 +362,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
 									class="{{
 									optionClasses
-									}} {{ globalFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
+									}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 									All Globals
 								</a>
 								{% for global in craft.app.globals.allSets() %}
@@ -382,7 +382,7 @@ Any entry, category, or global associated with a Matrix block attached will outp
 								<a href="{{ url(craft.app.request.absoluteUrl, { category: null, global: null, section: null }) }}"
 									class="{{
 									optionClasses
-									}} {{ categoryFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
+									}} {{ sectionFilter == '' and categoryFilter == '' and globalFilter == '' ? optionSelectedClasses ~ ' font-semibold' : optionResetClasses }}">
 									All Categories
 								</a>
 								{% for category in craft.app.categories.allGroups() %}
