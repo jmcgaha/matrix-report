@@ -2,7 +2,7 @@
 
 # Matrix Report for Craft 3/4/5
 
-Version 5.2.0
+Version 5.3.0
 
 Sites with large Matrix page-builders can make it difficult to know if and when different Matrix blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 
@@ -50,6 +50,12 @@ Any entry, category, or global associated with a Matrix block attached will outp
 		{% set plugin = craft.app.plugins.getPlugin('seomatic', false) %}
 		{% if plugin is not null and plugin.isInstalled %}
 			{% do seomatic.config.renderEnabled(false) %}
+		{% endif %}
+
+		{# Disable Blitz caching if it is installed and enabled #}
+		{% set blitzPlugin = craft.app.plugins.getPlugin('blitz', false) %}
+		{% if blitzPlugin is not null and blitzPlugin.isInstalled %}
+			{% do craft.blitz.options({ cachingEnabled: false }) %}
 		{% endif %}
 
 		{% requirePermission 'accessCp' %}
