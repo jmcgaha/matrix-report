@@ -2,7 +2,7 @@
 
 # Matrix Report for Craft 3/4/5
 
-Version 5.3.0
+Version 5.4.0
 
 Sites with large Matrix page-builders can make it difficult to know if and when different Matrix blocks are used. This template will give you a report for every Matrix block on your site. It can be filtered by:
 
@@ -190,20 +190,27 @@ Any entry, category, or global associated with a Matrix block attached will outp
 				{% if
 					craft.app.getEditionName() not in ['Solo', 'Team']
 						and (craft.rebrand.isIconUploaded() or craft.rebrand.isLogoUploaded()) %}
-					<a href="{{ url('/') }}" target="_blank">
-						{% if '.svg' in [craft.rebrand.getIcon().url(), craft.rebrand.getLogo().url()] %}
-							<img src="{{ craft.rebrand.getIcon() ? craft.rebrand.getIcon().url() : craft.rebrand.getLogo().url() }}"
-								class="max-h-11"
-								alt="{{ systemName }} logo" />
-						{% else %}
-							{{
-								svg(craft.rebrand.getIcon() ? craft.rebrand.getIcon().path() : craft.rebrand.getLogo().path())|attr({
-									class: 'max-h-11 w-auto',
-									title: systemName ~ ' logo'
-								})
-							}}
-						{% endif %}
-					</a>
+					{% if craft.rebrand.isIconUploaded() %}
+						<a href="{{ url('/') }}" target="_blank">
+							{% if '.svg' not in craft.rebrand.getIcon().url() %}
+								<img src="{{ craft.rebrand.getIcon().url() }}" class="max-h-11" alt="{{ systemName }} logo" />
+							{% else %}
+								{{
+									svg(craft.rebrand.getIcon().path())|attr({ class: 'max-h-11 w-auto', title: systemName ~ ' logo' })
+								}}
+							{% endif %}
+						</a>
+					{% elseif craft.rebrand.isLogoUploaded() %}
+						<a href="{{ url('/') }}" target="_blank">
+							{% if '.svg' not in craft.rebrand.getLogo().url() %}
+								<img src="{{ craft.rebrand.getLogo().url() }}" class="max-h-11" alt="{{ systemName }} logo" />
+							{% else %}
+								{{
+									svg(craft.rebrand.getLogo().path())|attr({ class: 'max-h-11 w-auto', title: systemName ~ ' logo' })
+								}}
+							{% endif %}
+						</a>
+					{% endif %}
 				{% else %}
 					<a href="{{ url('/') }}"
 						class="font-bold leading-8 relative text-base whitespace-nowrap 2xl:text-xl after:bg-blue-500 after:absolute after:h-1 after:w-full after:bottom-0 after:left-0 hover:after:w-0 after:transition-all after:duration-300"
